@@ -5,8 +5,8 @@ import { LandingPage } from './landing/LandingPage.tsx'
 type View = 'intro' | 'enter' | 'command' | 'reveal' | 'landing'
 
 const ENTRY_MS = 800
-const CONFIRM_MS = 2000
-const REVEAL_MS = 700
+const CONFIRM_MS = 1200
+const REVEAL_MS = 600
 
 export default function App() {
   const [view, setView] = useState<View>('intro')

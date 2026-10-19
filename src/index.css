@@ -287,7 +287,7 @@ button:active {
 }
 
 .command.is-leaving {
-  animation: command-out 0.7s ease forwards;
+  animation: command-out 0.6s ease forwards;
 }
 
 .scan {
@@ -306,7 +306,7 @@ button:active {
   height: 2px;
   background: #1f9a62;
   box-shadow: 0 0 10px rgba(31, 154, 98, 0.35);
-  animation: scan-pass 0.7s ease forwards;
+  animation: scan-pass 0.6s ease forwards;
 }
 
 @keyframes command-out {
