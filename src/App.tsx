@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { CommandCenter } from './CommandCenter.tsx'
 import { Opening } from './cinematic/Opening.tsx'
 
 type View = 'intro' | 'enter' | 'command'
@@ -17,11 +18,7 @@ export default function App() {
   }
 
   if (view === 'command') {
-    return (
-      <main className="command">
-        <h1>ACCESS GRANTED — COMMAND CENTER</h1>
-      </main>
-    )
+    return <CommandCenter />
   }
 
   return (

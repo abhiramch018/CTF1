@@ -1,0 +1,71 @@
+/* Mission Section */
+.mission-section {
+  position: relative;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 5rem 1.5rem 6rem;
+  background: #070a08;
+}
+
+.mission-signal-receiver {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 4rem;
+  background: linear-gradient(180deg, rgba(31, 154, 98, 0.3), transparent);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.mission-section.is-visible .mission-signal-receiver {
+  opacity: 1;
+}
+
+.mission-content {
+  max-width: 42rem;
+  text-align: center;
+}
+
+.mission-heading {
+  margin: 0 0 1.5rem;
+  color: #e7fff4;
+  font-family: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mission-text {
+  margin: 0 0 1rem;
+  color: #a8d4be;
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+}
+
+.mission-text:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .mission-section {
+    padding: 4rem 1rem 5rem;
+  }
+
+  .mission-content {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mission-signal-receiver {
+    transition: none;
+    opacity: 0.5;
+  }
+}
