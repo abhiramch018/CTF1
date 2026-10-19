@@ -19,7 +19,6 @@ body,
 
 body {
   min-height: 100vh;
-  overflow: hidden;
 }
 
 button,
@@ -454,5 +453,464 @@ button:active {
   .continue {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ============================================
+   COMMAND CENTER & COUNTDOWN TELEMETRY
+   ============================================ */
+
+.cmd-center {
+  position: fixed;
+  inset: 0;
+  background: #070a08;
+  color: #e7fff4;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cmd-scroll-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Countdown Section */
+.cd-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 1.5rem;
+  overflow: hidden;
+}
+
+.cd-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 64rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.cd-heading {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.2vw, 0.88rem);
+  font-weight: 500;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: #9ee6c3;
+  text-align: center;
+}
+
+/* Countdown Cards */
+.cd-cards {
+  display: flex;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cd-card {
+  position: relative;
+  min-width: clamp(4.5rem, 12vw, 7rem);
+  padding: 1.25rem 1rem 1rem;
+  background: rgba(7, 10, 8, 0.6);
+  border: 1px solid rgba(31, 154, 98, 0.12);
+  transition: border-color 0.6s ease, box-shadow 0.6s ease;
+}
+
+.cd-card.is-activated {
+  border-color: rgba(31, 154, 98, 0.45);
+  box-shadow:
+    inset 0 0 0 1px rgba(31, 154, 98, 0.08),
+    0 0 24px -8px rgba(31, 154, 98, 0.2);
+}
+
+.cd-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #1f9a62, transparent);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.cd-card.is-activated::before {
+  opacity: 1;
+}
+
+.cd-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cd-digits {
+  display: flex;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #f4f7f5;
+}
+
+.cd-digit {
+  display: inline-block;
+  min-width: 0.58em;
+  text-align: center;
+}
+
+.cd-digit.is-decrypting {
+  color: #78e6b0;
+  text-shadow: 0 0 8px rgba(120, 230, 176, 0.4);
+}
+
+.cd-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  color: #6bb99a;
+  text-transform: uppercase;
+}
+
+/* Signal Line */
+.cd-signal-line {
+  position: relative;
+  width: 100%;
+  max-width: 48rem;
+  height: 2px;
+  background: rgba(31, 154, 98, 0.1);
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.cd-signal-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--signal-pos, 0) * 100% - 15%);
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #1f9a62 40%, #78e6b0 50%, #1f9a62 60%, transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.cd-signal-line.is-active::before {
+  opacity: 1;
+}
+
+.cd-signal-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(31, 154, 98, 0.3), rgba(31, 154, 98, 0.08) 20%, rgba(31, 154, 98, 0.08) 80%, rgba(31, 154, 98, 0.3));
+}
+
+/* Metadata */
+.cd-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem 2.5rem;
+  margin-top: 1.5rem;
+}
+
+.cd-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cd-meta-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #5a8f76;
+}
+
+.cd-meta-value {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #c6f6de;
+}
+
+/* Background Ambient - Signal Tower */
+.cd-bg-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cd-tower {
+  position: absolute;
+  right: 8%;
+  bottom: 12%;
+  width: clamp(80px, 12vw, 160px);
+  height: clamp(200px, 32vh, 400px);
+  opacity: 0.22;
+  filter: blur(0.4px);
+}
+
+.cd-tower-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 8%;
+  background: linear-gradient(180deg, #1a2420, #0c100e);
+  clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
+}
+
+.cd-tower-shaft {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24%;
+  height: 60%;
+  background: linear-gradient(180deg, #182018, #101614 40%, #0c100e);
+}
+
+.cd-tower-mid {
+  position: absolute;
+  bottom: 52%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 12%;
+  background: linear-gradient(180deg, #1e2824, #141a16);
+  clip-path: polygon(15% 0, 85% 0, 100% 100%, 0% 100%);
+}
+
+.cd-tower-top {
+  position: absolute;
+  bottom: 64%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18%;
+  height: 28%;
+  background: linear-gradient(180deg, #202820, #161c18 60%, #101614);
+}
+
+.cd-tower-beacon {
+  position: absolute;
+  bottom: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10%;
+  height: 6%;
+  background: #1f9a62;
+  opacity: calc(0.3 + var(--pulse, 0) * 0.5);
+  box-shadow: 0 0 calc(8px + var(--pulse, 0) * 12px) rgba(31, 154, 98, calc(0.3 + var(--pulse, 0) * 0.4));
+  transition: opacity 0.1s linear;
+}
+
+.cd-tower-pulse {
+  position: absolute;
+  bottom: 91%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(20% + var(--pulse, 0) * 30%);
+  height: calc(4% + var(--pulse, 0) * 6%);
+  background: radial-gradient(ellipse at center, rgba(31, 154, 98, calc(0.15 * var(--pulse, 0))), transparent 70%);
+  pointer-events: none;
+}
+
+.cd-tower-rays {
+  position: absolute;
+  bottom: 92%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 30%;
+}
+
+.cd-tower-ray {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  height: calc(40% + var(--ray-index) * 20%);
+  background: linear-gradient(180deg, transparent, rgba(31, 154, 98, calc(0.08 + var(--pulse, 0) * 0.12)));
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(calc(-20deg + var(--ray-index) * 20deg));
+  opacity: calc(0.4 + var(--pulse, 0) * 0.4);
+}
+
+.cd-data-rails {
+  position: absolute;
+  bottom: 20%;
+  left: -100%;
+  width: 300%;
+  height: 40%;
+  pointer-events: none;
+}
+
+.cd-data-rail {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(31, 154, 98, 0.06) 30%, rgba(31, 154, 98, 0.1) 50%, rgba(31, 154, 98, 0.06) 70%, transparent);
+  top: calc(20% + var(--rail-index) * 20%);
+  opacity: calc(0.3 + var(--pulse, 0) * 0.4);
+}
+
+/* Signal Bridge to Mission */
+.cmd-signal-bridge {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 60px;
+  height: calc(60px + 40px * var(--extend-progress, 0));
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cmd-signal-stem {
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(180deg, #1f9a62, rgba(31, 154, 98, 0.5) 40%, rgba(31, 154, 98, 0.15) 80%, transparent);
+  opacity: calc(0.3 + 0.7 * var(--extend-progress, 0));
+  transition: opacity 0.4s ease-out;
+}
+
+.cmd-signal-stem::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, #1f9a62 20%, transparent 70%);
+  opacity: calc(0.5 + 0.5 * var(--extend-progress, 0));
+}
+
+/* Mission Section */
+.cmd-mission {
+  position: relative;
+  padding: 4rem 1.5rem 6rem;
+  display: flex;
+  justify-content: center;
+}
+
+.cmd-mission-content {
+  max-width: 42rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cmd-section-heading {
+  margin: 0;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #f4f7f5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cmd-section-tag {
+  font-family: Outfit, "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  color: #5a8f76;
+}
+
+.cmd-mission-text {
+  margin: 0;
+  font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+  line-height: 1.7;
+  color: #a8d4be;
+  max-width: 38rem;
+}
+
+.cmd-spacer {
+  height: 40vh;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 640px) {
+  .cd-section {
+    padding: 3rem 1rem;
+  }
+
+  .cd-cards {
+    gap: 0.5rem;
+  }
+
+  .cd-card {
+    min-width: 4rem;
+    padding: 1rem 0.75rem 0.75rem;
+  }
+
+  .cd-meta {
+    gap: 1rem 1.5rem;
+  }
+
+  .cd-tower {
+    right: 4%;
+    opacity: 0.12;
+  }
+
+  .cmd-mission {
+    padding: 3rem 1rem 4rem;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .cd-card {
+    transition: none;
+  }
+
+  .cd-card.is-activated {
+    border-color: rgba(31, 154, 98, 0.45);
+  }
+
+  .cd-signal-line::before {
+    display: none;
+  }
+
+  .cd-tower-beacon {
+    opacity: 0.5;
+    transition: none;
+  }
+
+  .cd-tower-pulse,
+  .cd-tower-rays,
+  .cd-data-rails {
+    display: none;
+  }
+
+  .cmd-signal-bridge {
+    display: none;
   }
 }
