@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Opening } from './cinematic/Opening.tsx'
+import { CountdownTelemetry } from './countdown/CountdownTelemetry.tsx'
 
 type View = 'intro' | 'enter' | 'command'
 
@@ -16,10 +17,29 @@ export default function App() {
     window.setTimeout(() => setView('command'), ENTRY_MS)
   }
 
+  // The cinematic stage locks body scroll; the command page scrolls normally.
+  useEffect(() => {
+    if (view !== 'command') return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'auto'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [view])
+
   if (view === 'command') {
     return (
-      <main className="command">
-        <h1>ACCESS GRANTED — COMMAND CENTER</h1>
+      <main>
+        <CountdownTelemetry />
+        <section className="mission" aria-labelledby="mission-title">
+          <div className="mission-inner">
+            <p className="mission-kicker">01 · Next transmission</p>
+            <h2 id="mission-title" className="mission-title">
+              Mission
+            </h2>
+            <p className="mission-note">The mission briefing arrives here, on the same signal.</p>
+          </div>
+        </section>
       </main>
     )
   }
