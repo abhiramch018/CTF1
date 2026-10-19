@@ -29,6 +29,8 @@ const VOXELS: Array<[number, number, number]> = [
   [0, 0, -1],
   [1, 0, 1],
   [-1, 0, -1],
+  [1, 1, 0],
+  [-1, 1, 0],
   [0, 1, 0],
   [0, 2, 0],
   [0, 3, 0],
@@ -95,6 +97,7 @@ function SignalTower() {
 
 export function CountdownTelemetry() {
   const sectionRef = useRef<HTMLElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const railRef = useRef<HTMLDivElement>(null)
   const [clock, setClock] = useState(() => remaining(Date.now()))
   const [shown, setShown] = useState<Clock>(() => (reducedMotion() ? remaining(Date.now()) : CIPHER))
@@ -122,15 +125,15 @@ export function CountdownTelemetry() {
   }, [])
 
   useEffect(() => {
-    const node = sectionRef.current
+    const node = stageRef.current
     if (!node || reducedMotion()) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry?.isIntersecting) return
         observer.disconnect()
-        setArmed(true)
+        window.requestAnimationFrame(() => setArmed(true))
       },
-      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.55, rootMargin: '0px 0px -12% 0px' },
     )
     observer.observe(node)
     return () => observer.disconnect()
@@ -143,7 +146,7 @@ export function CountdownTelemetry() {
     let frame = 0
     const timer = window.setInterval(() => {
       frame += 1
-      const locked = Math.min(8, Math.floor(frame / 2))
+      const locked = Math.min(8, Math.max(0, Math.floor((frame - 2) / 3)))
       let mixed = ''
       for (let index = 0; index < 8; index += 1) {
         mixed += index < locked ? source[index] : glyph()
@@ -181,11 +184,11 @@ export function CountdownTelemetry() {
       if (!mission) return
       const railBox = rail.getBoundingClientRect()
       const missionBox = mission.getBoundingClientRect()
-      const start = window.innerHeight * 0.9
-      const progress = Math.min(1, Math.max(0, (start - missionBox.top) / 240))
-      const span = Math.max(0, missionBox.top - railBox.bottom) + Math.min(168, missionBox.height * 0.28)
-      root.style.setProperty('--signal-drop', `${progress * span}px`)
-      root.style.setProperty('--signal-drop-opacity', (0.62 * (1 - progress * 0.72)).toFixed(3))
+      const start = window.innerHeight * 0.94
+      const progress = Math.min(1, Math.max(0, (start - missionBox.top) / 280))
+      const span = Math.max(0, missionBox.top - railBox.bottom) + Math.min(220, missionBox.height * 0.42)
+      root.style.setProperty('--signal-drop', `${Math.max(18, progress * span)}px`)
+      root.style.setProperty('--signal-drop-opacity', (0.88 * (1 - progress * 0.38)).toFixed(3))
     }
     const onScroll = () => {
       if (frame) return
@@ -219,7 +222,7 @@ export function CountdownTelemetry() {
         <p className="eyebrow">Countdown</p>
         <h2>{clock.open ? 'Qualifier window' : 'Until the online qualifier'}</h2>
       </div>
-      <div className="count-stage">
+      <div className="count-stage" ref={stageRef}>
         <div className="count" role="timer" aria-label={timerLabel(clock)}>
           {UNITS.map(([label, key], index) => (
             <div key={label} className={index < resolved ? 'unit is-live' : 'unit'} aria-hidden="true">

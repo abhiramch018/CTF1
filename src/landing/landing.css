@@ -221,6 +221,10 @@ a.cta:hover {
   margin-top: 1.4rem;
 }
 
+.telemetry .fact-row {
+  max-width: 36rem;
+}
+
 .count {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 8rem));
@@ -254,81 +258,92 @@ a.cta:hover {
 
 .signal-rail {
   position: relative;
+  width: min(calc(100% + 7.5rem), 42rem);
   height: 1px;
   margin-top: 1.15rem;
-  background: rgba(31, 154, 98, 0.2);
+  background: rgba(31, 154, 98, 0.38);
 }
 
-.signal-rail::before {
+.signal-rail::before,
+.signal-rail::after {
   content: "";
   position: absolute;
-  left: -1px;
   top: -1px;
   width: 3px;
   height: 3px;
-  background: rgba(158, 230, 195, 0.5);
+  background: rgba(158, 230, 195, 0.62);
+}
+
+.signal-rail::before {
+  left: -1px;
+}
+
+.signal-rail::after {
+  right: -1px;
 }
 
 .signal-tick {
   position: absolute;
   top: 0;
   left: 0;
-  width: 18%;
+  width: 22%;
   height: 1px;
-  background: linear-gradient(90deg, rgba(31, 154, 98, 0), rgba(184, 244, 214, 0.62), rgba(31, 154, 98, 0));
+  background: linear-gradient(90deg, rgba(31, 154, 98, 0), rgba(198, 246, 222, 0.88), rgba(31, 154, 98, 0));
   opacity: 0;
 }
 
 .telemetry.is-armed .signal-tick {
   opacity: 1;
-  animation: signal-travel 10.8s linear infinite;
+  animation: signal-travel 9.6s linear infinite;
 }
 
 .signal-drop {
   position: absolute;
-  left: 0;
+  left: auto;
+  right: 0;
   top: 0;
   width: 1px;
   height: var(--signal-drop);
   opacity: var(--signal-drop-opacity);
   background: linear-gradient(
     180deg,
-    rgba(158, 230, 195, 0.48) 0%,
-    rgba(31, 154, 98, 0.2) 46%,
+    rgba(158, 230, 195, 0.7) 0%,
+    rgba(31, 154, 98, 0.32) 38%,
     rgba(31, 154, 98, 0) 100%
   );
   pointer-events: none;
 }
 
 .telemetry.is-armed .signal-drop {
-  min-height: 0.9rem;
+  min-height: 1.1rem;
 }
 
 .signal-tower {
   position: absolute;
-  right: clamp(0rem, 7vw, 5.5rem);
-  top: 12%;
+  right: clamp(1rem, 10vw, 7rem);
+  top: 6%;
   z-index: 0;
-  width: 13rem;
-  height: 17rem;
+  width: 18rem;
+  height: 20rem;
   pointer-events: none;
-  opacity: 0.38;
-  perspective: 820px;
+  opacity: 0.58;
+  perspective: 900px;
+  transform-style: preserve-3d;
 }
 
 .signal-tower-rig {
   position: absolute;
-  left: 54%;
-  bottom: 10%;
-  width: 12px;
-  height: 12px;
-  transform: rotateX(62deg) rotateZ(-42deg);
+  left: 48%;
+  bottom: 14%;
+  width: 16px;
+  height: 16px;
+  transform: rotateX(58deg) rotateZ(-38deg) scale(1.15);
   transform-style: preserve-3d;
   transform-origin: center;
 }
 
 .vox {
-  --s: 12px;
+  --s: 16px;
   position: absolute;
   width: var(--s);
   height: var(--s);
@@ -339,29 +354,29 @@ a.cta:hover {
 .vox i {
   position: absolute;
   inset: 0;
-  background: #0c1210;
-  border: 1px solid rgba(31, 154, 98, 0.12);
+  background: #101714;
+  border: 1px solid rgba(31, 154, 98, 0.22);
   backface-visibility: hidden;
 }
 
 .vox i:nth-child(1) {
-  transform: rotateX(90deg) translateZ(6px);
-  background: #141c18;
-  border-color: rgba(31, 154, 98, 0.16);
+  transform: rotateX(90deg) translateZ(8px);
+  background: #1c2a22;
+  border-color: rgba(110, 186, 148, 0.28);
 }
 
 .vox i:nth-child(2) {
-  transform: rotateY(-90deg) translateZ(6px);
-  background: #080b09;
+  transform: rotateY(-90deg) translateZ(8px);
+  background: #0a0e0c;
 }
 
 .vox i:nth-child(3) {
-  transform: translateZ(6px);
-  background: #0e1512;
+  transform: translateZ(8px);
+  background: #141c18;
 }
 
 .vox-beacon i:nth-child(1) {
-  background: rgba(31, 154, 98, 0.12);
+  background: rgba(31, 154, 98, 0.2);
 }
 
 .telemetry.is-armed .vox-beacon i:nth-child(1) {
@@ -381,10 +396,10 @@ a.cta:hover {
   0%,
   72%,
   100% {
-    background: rgba(31, 154, 98, 0.08);
+    background: rgba(31, 154, 98, 0.14);
   }
   82% {
-    background: rgba(31, 154, 98, 0.3);
+    background: rgba(88, 176, 132, 0.46);
   }
 }
 
@@ -558,12 +573,16 @@ a.cta:hover {
     width: min(100%, 20rem);
   }
 
+  .signal-rail {
+    width: 100%;
+  }
+
   .signal-tower {
-    right: -1.25rem;
+    right: -0.5rem;
     top: auto;
-    bottom: 18%;
-    opacity: 0.2;
-    transform: scale(0.72);
+    bottom: 20%;
+    opacity: 0.34;
+    transform: scale(0.78);
     transform-origin: right bottom;
   }
 
