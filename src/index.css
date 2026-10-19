@@ -19,7 +19,7 @@ body,
 
 body {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 button,
@@ -266,23 +266,412 @@ button:active {
   opacity: 1;
 }
 
-.command {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
+.command-center {
+  min-height: 100vh;
   background: #070a08;
   color: #e7fff4;
 }
 
-.command h1 {
+.telemetry {
+  --telemetry-edge: rgba(68, 215, 143, 0.62);
+  position: relative;
+  isolation: isolate;
+  view-timeline-name: --telemetry-exit;
+  view-timeline-axis: block;
+  display: grid;
+  min-height: 100vh;
+  align-items: center;
+  padding: clamp(6rem, 12vh, 9rem) clamp(1.25rem, 7vw, 7.5rem);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(10, 20, 15, 0) 70%, rgba(11, 30, 21, 0.24) 100%),
+    #070a08;
+}
+
+.telemetry::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(rgba(120, 230, 176, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 230, 176, 0.06) 1px, transparent 1px);
+  background-size: 4.5rem 4.5rem;
+  mask-image: linear-gradient(90deg, transparent 5%, #000 65%, transparent 100%);
+}
+
+.telemetry-shell {
+  position: relative;
+  z-index: 2;
+  width: min(72rem, 100%);
+  margin: 0 auto;
+}
+
+.telemetry-header {
+  max-width: 52rem;
+  margin-bottom: clamp(2.75rem, 7vh, 5rem);
+}
+
+.telemetry-kicker,
+.section-index {
+  margin: 0 0 1.25rem;
+  color: #6bcfa0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-right: 0.75rem;
+  border-radius: 50%;
+  background: #55d596;
+  box-shadow: 0 0 0 3px rgba(85, 213, 150, 0.08);
+  vertical-align: 0.04rem;
+}
+
+.telemetry h1 {
   margin: 0;
-  max-width: 18em;
-  padding: 0 1.5rem;
-  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  max-width: 14ch;
+  color: #f0f7f3;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(3.4rem, 7.2vw, 7rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0.015em;
+  text-wrap: balance;
+}
+
+.telemetry-date {
+  display: flex;
+  gap: 0.8rem;
+  margin: 1.5rem 0 0;
+  color: #96aaa0;
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
-  text-align: center;
+  letter-spacing: 0.2em;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.55rem, 1.5vw, 1.15rem);
+}
+
+.countdown-unit {
+  position: relative;
+  min-height: clamp(8.5rem, 15vw, 12.25rem);
+  padding: clamp(1rem, 2vw, 1.6rem);
+  overflow: hidden;
+  border: 1px solid rgba(93, 123, 107, 0.18);
+  background: linear-gradient(145deg, rgba(12, 22, 17, 0.56), rgba(7, 10, 8, 0.08));
+  transition:
+    border-color 500ms ease var(--unit-delay),
+    box-shadow 500ms ease var(--unit-delay);
+}
+
+.countdown-unit::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-top: 1px solid var(--telemetry-edge);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition:
+    transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1) var(--unit-delay),
+    opacity 200ms ease var(--unit-delay);
+}
+
+.telemetry.is-active .countdown-unit {
+  border-color: rgba(68, 215, 143, 0.42);
+  box-shadow: inset 0 1px rgba(145, 242, 194, 0.04);
+}
+
+.telemetry.is-active .countdown-unit::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.countdown-value {
+  display: block;
+  color: #dff7eb;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(3.8rem, 8vw, 7.2rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: 0.02em;
+}
+
+.countdown-label {
+  position: absolute;
+  left: clamp(1rem, 2vw, 1.6rem);
+  bottom: 1.1rem;
+  color: #769185;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.unit-index {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.72rem;
+  color: rgba(106, 194, 151, 0.32);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.55rem;
+}
+
+.signal-track {
+  position: relative;
+  height: 1px;
+  margin-top: 1.4rem;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(68, 215, 143, 0.24) 10%, rgba(68, 215, 143, 0.24) 90%, transparent);
+}
+
+.signal-packet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(4rem, 11vw, 8rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(157, 244, 201, 0.9), transparent);
+  animation: signal-travel 7s linear infinite;
+}
+
+.event-facts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin: clamp(2.5rem, 6vh, 4rem) 0 0;
+}
+
+.event-facts div {
+  min-width: 0;
+}
+
+.event-facts dt {
+  margin-bottom: 0.55rem;
+  color: #607a6e;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.23em;
+  text-transform: uppercase;
+}
+
+.event-facts dd {
+  margin: 0;
+  color: #c4d4cc;
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+}
+
+.signal-downlink {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: -9rem;
+  width: 1px;
+  height: 15rem;
+  background: linear-gradient(180deg, rgba(68, 215, 143, 0.42), rgba(68, 215, 143, 0));
+  transform-origin: top;
+}
+
+.telemetry.is-active .signal-downlink {
+  animation: downlink-extend 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) 700ms both;
+}
+
+@supports (animation-timeline: view()) {
+  .telemetry.is-active .signal-downlink {
+    animation: downlink-extend linear both;
+    animation-timeline: --telemetry-exit;
+    animation-range: exit 0% exit 55%;
+  }
+}
+
+.ambient-tower {
+  position: absolute;
+  z-index: -1;
+  right: clamp(-7rem, 2vw, 3rem);
+  top: 10%;
+  width: clamp(16rem, 32vw, 31rem);
+  height: 75%;
+  opacity: 0.24;
+  filter: saturate(0.7);
+  transform: perspective(900px) rotateY(-15deg) rotateX(3deg);
+  transform-origin: right center;
+}
+
+.tower-cap {
+  position: absolute;
+  top: 5%;
+  left: 53%;
+  width: 3.6rem;
+  height: 0.45rem;
+  border: 1px solid rgba(67, 147, 107, 0.45);
+  background: #09120e;
+  animation: tower-pulse 5s ease-in-out infinite;
+}
+
+.tower-mast {
+  position: absolute;
+  top: 5%;
+  bottom: 21%;
+  left: calc(53% + 1.5rem);
+  width: 0.6rem;
+  border-inline: 1px solid rgba(67, 147, 107, 0.24);
+  background: linear-gradient(90deg, #080d0a, #101c16, #080d0a);
+}
+
+.tower-mast i,
+.tower-base i {
+  position: absolute;
+  display: block;
+  border: 1px solid rgba(70, 128, 99, 0.2);
+  background: #0a100d;
+}
+
+.tower-mast i:nth-child(1) {
+  top: 20%;
+  left: -1.4rem;
+  width: 3.2rem;
+  height: 0.3rem;
+}
+
+.tower-mast i:nth-child(2) {
+  top: 47%;
+  left: -2.2rem;
+  width: 4.8rem;
+  height: 0.5rem;
+}
+
+.tower-mast i:nth-child(3) {
+  top: 70%;
+  left: -1.25rem;
+  width: 2.9rem;
+  height: 0.28rem;
+}
+
+.tower-base {
+  position: absolute;
+  right: 8%;
+  bottom: 5%;
+  left: 27%;
+  height: 23%;
+  border: 1px solid rgba(70, 128, 99, 0.19);
+  background:
+    linear-gradient(135deg, rgba(21, 38, 30, 0.65), rgba(7, 10, 8, 0.9));
+  clip-path: polygon(17% 0, 82% 0, 100% 100%, 0 100%);
+}
+
+.tower-base i:nth-child(1) {
+  inset: 24% 25% auto;
+  height: 20%;
+}
+
+.tower-base i:nth-child(2) {
+  inset: 55% 19% auto;
+  height: 12%;
+}
+
+.tower-base i:nth-child(3) {
+  right: 9%;
+  bottom: 9%;
+  width: 14%;
+  height: 28%;
+}
+
+.tower-rail {
+  position: absolute;
+  right: 1%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(68, 215, 143, 0.35));
+  transform-origin: right;
+}
+
+.rail-one {
+  top: 31%;
+  width: 47%;
+}
+
+.rail-two {
+  top: 52%;
+  width: 65%;
+}
+
+.mission {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  min-height: 78vh;
+  align-items: center;
+  padding: 8rem clamp(1.25rem, 7vw, 7.5rem);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(23, 65, 44, 0.14), transparent 34%),
+    #070a08;
+}
+
+.mission-copy {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+}
+
+.mission h2 {
+  margin: 0;
+  color: #eaf4ef;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.mission-copy > p:last-child {
+  max-width: 31rem;
+  margin: 1.5rem 0 0;
+  color: #8ca297;
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  line-height: 1.7;
+}
+
+@keyframes signal-travel {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(calc(72rem + 110%));
+  }
+}
+
+@keyframes downlink-extend {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes tower-pulse {
+  0%,
+  86%,
+  100% {
+    border-color: rgba(67, 147, 107, 0.35);
+    box-shadow: none;
+  }
+  91% {
+    border-color: rgba(103, 213, 158, 0.62);
+    box-shadow: 0 0 12px rgba(68, 215, 143, 0.08);
+  }
 }
 
 @keyframes lockup-in {
@@ -439,6 +828,56 @@ button:active {
     top: 0.75rem;
     right: 0.75rem;
   }
+
+  .telemetry {
+    min-height: auto;
+    padding-block: 5.5rem 6.5rem;
+  }
+
+  .telemetry-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .telemetry h1 {
+    font-size: clamp(3.1rem, 15vw, 4.6rem);
+  }
+
+  .telemetry-date {
+    flex-wrap: wrap;
+    font-size: 0.66rem;
+  }
+
+  .countdown-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .countdown-unit {
+    min-height: 7.75rem;
+  }
+
+  .countdown-value {
+    font-size: clamp(3.6rem, 20vw, 5.5rem);
+  }
+
+  .event-facts {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 2rem;
+  }
+
+  .ambient-tower {
+    right: -7rem;
+    top: 6%;
+    width: 19rem;
+    opacity: 0.16;
+  }
+
+  .signal-downlink {
+    left: 73%;
+  }
+
+  .mission {
+    min-height: 68vh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -453,6 +892,26 @@ button:active {
   .lockup,
   .continue {
     opacity: 1;
+    transform: none;
+  }
+
+  .countdown-unit,
+  .countdown-unit::before {
+    transition: none;
+  }
+
+  .signal-packet,
+  .signal-downlink,
+  .tower-cap {
+    animation: none;
+  }
+
+  .signal-packet {
+    display: none;
+  }
+
+  .signal-downlink {
+    opacity: 0.55;
     transform: none;
   }
 }
