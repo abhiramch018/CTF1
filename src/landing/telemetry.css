@@ -1,0 +1,290 @@
+.band.telemetry {
+  --pad: clamp(1.1rem, 4vw, 3rem);
+  position: relative;
+  padding-block: clamp(3.5rem, 10vh, 6.5rem);
+}
+
+.tele-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tele-body {
+  position: relative;
+  z-index: 1;
+}
+
+.signal-tower {
+  position: absolute;
+  right: clamp(-3rem, 4vw, 5rem);
+  bottom: -0.5rem;
+  width: auto;
+  height: min(112%, 36rem);
+  opacity: 0.65;
+  -webkit-mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, 0.25) 100%);
+  mask-image: linear-gradient(to top, #000 45%, rgba(0, 0, 0, 0.25) 100%);
+}
+
+.signal-tower .face-top {
+  fill: #0f1814;
+}
+
+.signal-tower .face-left {
+  fill: #0b120f;
+}
+
+.signal-tower .face-right {
+  fill: #080d0b;
+}
+
+.signal-tower polygon {
+  stroke: rgba(43, 189, 126, 0.08);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.signal-tower .edge {
+  opacity: 0;
+  animation: tele-edge 9s linear infinite paused;
+}
+
+.signal-tower .edge polygon {
+  fill: none;
+  stroke: #2bbd7e;
+  stroke-width: 0.8;
+}
+
+.signal-tower .win,
+.signal-tower .beacon {
+  fill: #2bbd7e;
+  stroke: none;
+  opacity: 0.1;
+  animation: tele-win 9s linear infinite paused;
+}
+
+.signal-tower .mast line {
+  stroke: rgba(43, 189, 126, 0.2);
+  stroke-width: 0.8;
+}
+
+.band.telemetry.is-live .signal-tower .edge,
+.band.telemetry.is-live .signal-tower .win,
+.band.telemetry.is-live .signal-tower .beacon {
+  animation-play-state: running;
+}
+
+@keyframes tele-edge {
+  0% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 0.5;
+  }
+  14% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes tele-win {
+  0% {
+    opacity: 0.1;
+  }
+  4% {
+    opacity: 0.5;
+  }
+  14% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+.count {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 8rem));
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+}
+
+.unit {
+  position: relative;
+  padding: 0.85rem 0.7rem;
+  border: 1px solid rgba(31, 154, 98, 0.16);
+}
+
+.unit::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(43, 189, 126, 0.72);
+  pointer-events: none;
+  clip-path: inset(0 100% 0 0);
+}
+
+.unit.is-active::after {
+  animation: unit-border 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+.band.telemetry.is-done .unit::after {
+  clip-path: inset(0);
+  animation: none;
+}
+
+@keyframes unit-border {
+  to {
+    clip-path: inset(0);
+  }
+}
+
+.unit strong {
+  display: block;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.05;
+  color: #f4f7f5;
+}
+
+.unit .d {
+  display: inline-block;
+  min-width: 0.58em;
+  text-align: center;
+}
+
+.unit .d.is-enc {
+  color: #2f9d6c;
+}
+
+.band.telemetry.is-pending .unit strong {
+  opacity: 0.55;
+}
+
+.unit-label {
+  display: block;
+  margin-top: 0.15rem;
+  color: #8fd8b4;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tele-trace {
+  position: relative;
+  height: 1px;
+  margin: 1.6rem calc(var(--pad) * -1) 0 calc(var(--pad) / -2);
+}
+
+.tele-trace::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  z-index: 1;
+  width: 5px;
+  height: 5px;
+  background: #070a08;
+  border: 1px solid rgba(43, 189, 126, 0.7);
+}
+
+.tele-line {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(90deg, rgba(31, 154, 98, 0.55), rgba(31, 154, 98, 0.16) 55%, rgba(31, 154, 98, 0));
+}
+
+.band.telemetry.is-pending .tele-line {
+  opacity: 0.35;
+}
+
+.tele-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(150, 236, 190, 0.85), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.telemetry:not(.is-pending) .tele-line::after {
+  animation: tele-travel 8s linear infinite paused;
+}
+
+.telemetry:not(.is-pending).is-live .tele-line::after {
+  animation-play-state: running;
+}
+
+@keyframes tele-travel {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  8% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateX(450%);
+  }
+}
+
+.tele-stem {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+  background: linear-gradient(
+    to bottom,
+    rgba(43, 189, 126, 0.8),
+    rgba(31, 154, 98, 0.45) 65%,
+    rgba(31, 154, 98, 0)
+  );
+}
+
+@media (max-width: 860px) {
+  .count {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-tower {
+    right: -2.5rem;
+    height: min(86%, 26rem);
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-tower .edge,
+  .signal-tower .win,
+  .signal-tower .beacon,
+  .unit::after,
+  .tele-line::after {
+    animation: none !important;
+  }
+
+  .unit::after {
+    clip-path: inset(0);
+  }
+
+  .tele-line::after {
+    display: none;
+  }
+}
