@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { CountdownTelemetry } from './CountdownTelemetry.tsx'
+import type { Clock } from './CountdownTelemetry.tsx'
 import { HeroVista } from './HeroVista.tsx'
 import { nav, partners, QUALIFIER_AT, registrationUrl, sectors } from './content.ts'
 import './landing.css'
@@ -7,7 +9,7 @@ function pad(value: number): string {
   return String(value).padStart(2, '0')
 }
 
-function remaining(now: number): { days: string; hours: string; minutes: string; seconds: string; open: boolean } {
+function remaining(now: number): Clock {
   const delta = Math.max(0, QUALIFIER_AT - now)
   const total = Math.floor(delta / 1000)
   return {
@@ -93,33 +95,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="countdown" className="band">
-          <div className="band-head">
-            <p className="eyebrow">Countdown</p>
-            <h2>{clock.open ? 'Qualifier window' : 'Until the online qualifier'}</h2>
-          </div>
-          <div className="count" role="timer" aria-label="Time until the online qualifier">
-            {(
-              [
-                ['Days', clock.days],
-                ['Hours', clock.hours],
-                ['Minutes', clock.minutes],
-                ['Seconds', clock.seconds],
-              ] as const
-            ).map(([label, value]) => (
-              <div key={label}>
-                <strong>{value}</strong>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-          <ul className="fact-row">
-            <li>06 Dec 2026, 09:00–21:00 IST</li>
-            <li>12 hours, remote, jeopardy-style</li>
-            <li>Finals at KLEF, Vaddeswaram</li>
-            <li>Teams of up to 3</li>
-          </ul>
-        </section>
+        <CountdownTelemetry clock={clock} />
 
         <section id="mission" className="band">
           <div className="band-head">

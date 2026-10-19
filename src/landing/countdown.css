@@ -1,0 +1,281 @@
+.tele {
+  --gutter: clamp(1.1rem, 4vw, 3rem);
+  --signal: #3ddc97;
+  position: relative;
+  min-height: min(82vh, 42rem);
+  padding-block: clamp(4.5rem, 13vh, 8rem);
+  display: flex;
+  align-items: center;
+}
+
+.tele-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.tele-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+
+.tele-tower {
+  position: absolute;
+  right: clamp(0rem, 7vw, 9rem);
+  bottom: 0;
+  height: 100%;
+  max-height: 44rem;
+  aspect-ratio: 380 / 540;
+  opacity: 0.9;
+}
+
+.vx-top,
+.vx-left,
+.vx-right {
+  stroke: rgba(31, 154, 98, 0.15);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+
+.vx-top {
+  fill: #0e1713;
+}
+
+.vx-left {
+  fill: #0a110e;
+}
+
+.vx-right {
+  fill: #080d0b;
+}
+
+.vx-rail {
+  fill: none;
+  stroke: rgba(31, 154, 98, 0.16);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+.vx-pulse {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.vx-pulse-edge {
+  stroke-width: 1.3;
+}
+
+.tele[data-visible="true"] .vx-pulse {
+  animation: vx-pulse 8s ease-in-out infinite;
+}
+
+@keyframes vx-pulse {
+  0% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.5;
+  }
+  16%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.tele-count {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 10rem));
+  gap: clamp(0.6rem, 1.6vw, 1.1rem);
+  margin-top: clamp(1.6rem, 4vh, 2.4rem);
+}
+
+.tele-card {
+  position: relative;
+  padding: 1.15rem 0.9rem 0.95rem;
+  border: 1px solid rgba(31, 154, 98, 0.2);
+}
+
+.tele-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--signal), var(--signal)) top left / 0 1px no-repeat,
+    linear-gradient(var(--signal), var(--signal)) top right / 1px 0 no-repeat,
+    linear-gradient(var(--signal), var(--signal)) bottom right / 0 1px no-repeat,
+    linear-gradient(var(--signal), var(--signal)) bottom left / 1px 0 no-repeat;
+  opacity: 0.7;
+  transition: background-size 0.8s cubic-bezier(0.22, 0.7, 0.2, 1) calc(var(--i) * 140ms);
+}
+
+.tele:not([data-phase="pending"]) .tele-card::before {
+  background-size:
+    100% 1px,
+    1px 100%,
+    100% 1px,
+    1px 100%;
+}
+
+.tele-digits {
+  display: block;
+  color: #f4f7f5;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-size: clamp(2.5rem, 5.4vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tele-ch {
+  display: inline-block;
+  width: 0.64em;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.tele-ch.is-cipher {
+  color: #3a9a70;
+}
+
+.tele-label {
+  display: block;
+  margin-top: 0.6rem;
+  color: #8fd8b4;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tele-rail {
+  position: relative;
+  height: 1px;
+  margin: clamp(1.4rem, 3.5vh, 2.2rem) calc(var(--gutter) * -1) 0 calc(var(--gutter) / -2);
+  pointer-events: none;
+}
+
+.tele-line {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: rgba(31, 154, 98, 0.22);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1.4s cubic-bezier(0.22, 0.7, 0.2, 1) 0.5s;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 72%, transparent 100%);
+}
+
+.tele-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--signal) 70%, transparent);
+  opacity: 0.85;
+  transform: translateX(-100%);
+}
+
+.tele[data-visible="true"]:not([data-phase="pending"]) .tele-line::after {
+  animation: signal-run 8s linear 1.2s infinite;
+}
+
+@keyframes signal-run {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(560%);
+  }
+}
+
+.tele-node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--signal);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.6s ease 0.5s;
+}
+
+.tele-drop {
+  position: absolute;
+  top: 0;
+  left: -0.5px;
+  width: 1px;
+  height: var(--drop-len, 0);
+  background: linear-gradient(180deg, rgba(61, 220, 151, 0.6), rgba(31, 154, 98, 0.22));
+  opacity: 0;
+  transform: scaleY(var(--drop, 0));
+  transform-origin: top center;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  transition: opacity 0.8s ease 1.2s;
+}
+
+.tele:not([data-phase="pending"]) .tele-line {
+  transform: scaleX(1);
+}
+
+.tele:not([data-phase="pending"]) .tele-node {
+  opacity: 0.9;
+}
+
+.tele:not([data-phase="pending"]) .tele-drop {
+  opacity: 1;
+}
+
+.tele .fact-row {
+  margin-top: clamp(1.4rem, 3vh, 2rem);
+}
+
+@media (max-width: 860px) {
+  .tele-tower {
+    right: -4rem;
+    height: 62%;
+    opacity: 0.55;
+  }
+}
+
+@media (max-width: 560px) {
+  .tele-count {
+    grid-template-columns: repeat(2, minmax(0, 10rem));
+  }
+
+  .tele-digits {
+    font-size: clamp(2.6rem, 14vw, 3.4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tele-card::before,
+  .tele-ch,
+  .tele-line,
+  .tele-node,
+  .tele-drop {
+    transition: none;
+  }
+
+  .tele[data-visible] .vx-pulse,
+  .tele[data-visible]:not([data-phase="pending"]) .tele-line::after {
+    animation: none;
+  }
+
+  .tele-line::after {
+    display: none;
+  }
+}
