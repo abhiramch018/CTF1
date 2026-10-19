@@ -200,24 +200,192 @@ a.cta:hover {
   line-height: 0.95;
 }
 
+.telemetry {
+  --signal-drop: 0px;
+  --signal-drop-opacity: 0.45;
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.telemetry .band-head,
+.telemetry .count-stage,
+.telemetry .fact-row {
+  position: relative;
+  z-index: 1;
+}
+
+.count-stage {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1.4rem;
+}
+
 .count {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 8rem));
   gap: 0.75rem;
-  margin-top: 1.4rem;
 }
 
-.count div {
+.count .unit {
   padding: 0.85rem 0.7rem;
-  border: 1px solid rgba(31, 154, 98, 0.35);
+  border: 1px solid rgba(31, 154, 98, 0.22);
+  transition: border-color 0.4s ease;
+}
+
+.count .unit.is-live {
+  border-color: rgba(158, 230, 195, 0.72);
 }
 
 .count strong {
   display: block;
+  min-width: 2ch;
+  color: #9bb9ab;
   font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.count .unit.is-live strong {
+  color: #f4f7f5;
+}
+
+.signal-rail {
+  position: relative;
+  height: 1px;
+  margin-top: 1.15rem;
+  background: rgba(31, 154, 98, 0.2);
+}
+
+.signal-rail::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: 3px;
+  height: 3px;
+  background: rgba(158, 230, 195, 0.5);
+}
+
+.signal-tick {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(31, 154, 98, 0), rgba(184, 244, 214, 0.62), rgba(31, 154, 98, 0));
+  opacity: 0;
+}
+
+.telemetry.is-armed .signal-tick {
+  opacity: 1;
+  animation: signal-travel 10.8s linear infinite;
+}
+
+.signal-drop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: var(--signal-drop);
+  opacity: var(--signal-drop-opacity);
+  background: linear-gradient(
+    180deg,
+    rgba(158, 230, 195, 0.48) 0%,
+    rgba(31, 154, 98, 0.2) 46%,
+    rgba(31, 154, 98, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.telemetry.is-armed .signal-drop {
+  min-height: 0.9rem;
+}
+
+.signal-tower {
+  position: absolute;
+  right: clamp(0rem, 7vw, 5.5rem);
+  top: 12%;
+  z-index: 0;
+  width: 13rem;
+  height: 17rem;
+  pointer-events: none;
+  opacity: 0.38;
+  perspective: 820px;
+}
+
+.signal-tower-rig {
+  position: absolute;
+  left: 54%;
+  bottom: 10%;
+  width: 12px;
+  height: 12px;
+  transform: rotateX(62deg) rotateZ(-42deg);
+  transform-style: preserve-3d;
+  transform-origin: center;
+}
+
+.vox {
+  --s: 12px;
+  position: absolute;
+  width: var(--s);
+  height: var(--s);
+  transform: translate3d(calc(var(--x) * var(--s)), calc(var(--y) * var(--s) * -1), calc(var(--z) * var(--s)));
+  transform-style: preserve-3d;
+}
+
+.vox i {
+  position: absolute;
+  inset: 0;
+  background: #0c1210;
+  border: 1px solid rgba(31, 154, 98, 0.12);
+  backface-visibility: hidden;
+}
+
+.vox i:nth-child(1) {
+  transform: rotateX(90deg) translateZ(6px);
+  background: #141c18;
+  border-color: rgba(31, 154, 98, 0.16);
+}
+
+.vox i:nth-child(2) {
+  transform: rotateY(-90deg) translateZ(6px);
+  background: #080b09;
+}
+
+.vox i:nth-child(3) {
+  transform: translateZ(6px);
+  background: #0e1512;
+}
+
+.vox-beacon i:nth-child(1) {
+  background: rgba(31, 154, 98, 0.12);
+}
+
+.telemetry.is-armed .vox-beacon i:nth-child(1) {
+  animation: beacon-pulse 5.4s ease-in-out infinite;
+}
+
+@keyframes signal-travel {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(620%);
+  }
+}
+
+@keyframes beacon-pulse {
+  0%,
+  72%,
+  100% {
+    background: rgba(31, 154, 98, 0.08);
+  }
+  82% {
+    background: rgba(31, 154, 98, 0.3);
+  }
 }
 
 .count span,
@@ -378,9 +546,25 @@ a.cta:hover {
   .sector-board,
   .protocol,
   .dates,
-  .partner-grid,
-  .count {
+  .partner-grid {
     grid-template-columns: 1fr;
+  }
+
+  .count {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .count-stage {
+    width: min(100%, 20rem);
+  }
+
+  .signal-tower {
+    right: -1.25rem;
+    top: auto;
+    bottom: 18%;
+    opacity: 0.2;
+    transform: scale(0.72);
+    transform-origin: right bottom;
   }
 
   .hero {
@@ -394,7 +578,26 @@ a.cta:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .scan,
-  .command.is-leaving {
+  .command.is-leaving,
+  .signal-tick,
+  .vox-beacon i:nth-child(1) {
     animation: none;
+  }
+
+  .telemetry {
+    --signal-drop: 5.25rem;
+    --signal-drop-opacity: 0.3;
+  }
+
+  .signal-tick {
+    display: none;
+  }
+
+  .count .unit {
+    border-color: rgba(158, 230, 195, 0.72);
+  }
+
+  .count .unit strong {
+    color: #f4f7f5;
   }
 }
