@@ -200,6 +200,128 @@ a.cta:hover {
   line-height: 0.95;
 }
 
+.telemetry {
+  position: relative;
+  isolation: isolate;
+  min-height: 31rem;
+  overflow: visible;
+  padding-top: clamp(4rem, 10vh, 7rem);
+  padding-bottom: clamp(5rem, 12vh, 8rem);
+}
+
+.telemetry-content {
+  position: relative;
+  z-index: 2;
+  max-width: 48rem;
+}
+
+.telemetry-structure {
+  position: absolute;
+  z-index: 0;
+  top: 13%;
+  right: clamp(3%, 9vw, 11%);
+  width: clamp(11rem, 22vw, 18rem);
+  height: 72%;
+  opacity: 0.2;
+  pointer-events: none;
+  perspective: 700px;
+  transform: rotateX(3deg) rotateY(-12deg);
+  transform-style: preserve-3d;
+}
+
+.tower-spine {
+  position: absolute;
+  top: 13%;
+  right: 28%;
+  width: 3.25rem;
+  height: 62%;
+  border: 1px solid rgba(62, 147, 102, 0.44);
+  background:
+    linear-gradient(90deg, rgba(18, 36, 27, 0.72), rgba(7, 10, 8, 0.9)),
+    repeating-linear-gradient(180deg, transparent 0 1rem, rgba(44, 122, 81, 0.16) 1rem calc(1rem + 1px));
+  box-shadow: -1.2rem 0 0 rgba(11, 20, 16, 0.68);
+  transform: translateZ(12px) skewY(-5deg);
+}
+
+.tower-spine i {
+  position: absolute;
+  left: 28%;
+  width: 44%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(69, 161, 113, 0.42);
+  background: rgba(26, 73, 49, 0.28);
+}
+
+.tower-spine i:nth-child(1) {
+  top: 11%;
+}
+
+.tower-spine i:nth-child(2) {
+  top: 34%;
+}
+
+.tower-spine i:nth-child(3) {
+  top: 57%;
+}
+
+.tower-spine i:nth-child(4) {
+  top: 80%;
+}
+
+.tower-cap {
+  position: absolute;
+  top: 4%;
+  right: 22%;
+  width: 5.4rem;
+  height: 2.1rem;
+  border: 1px solid rgba(71, 163, 115, 0.42);
+  background: #0a120e;
+  transform: translateZ(18px) skewY(-6deg);
+}
+
+.tower-cap::after {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  right: 0.85rem;
+  width: 0.32rem;
+  height: 0.32rem;
+  background: #4aaf7e;
+  box-shadow: 0 0 0 3px rgba(74, 175, 126, 0.08);
+  animation: tower-pulse 4.8s ease-in-out infinite;
+}
+
+.tower-base {
+  position: absolute;
+  right: 12%;
+  bottom: 8%;
+  width: 8.5rem;
+  height: 2.5rem;
+  border: 1px solid rgba(49, 120, 82, 0.38);
+  background: rgba(9, 18, 13, 0.88);
+  transform: rotateX(64deg) translateZ(-4px);
+}
+
+.data-rail {
+  position: absolute;
+  right: 38%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(58, 149, 100, 0.5), transparent);
+  transform-origin: right center;
+}
+
+.rail-a {
+  top: 31%;
+  width: 68%;
+  transform: rotateY(-16deg) rotateZ(-7deg);
+}
+
+.rail-b {
+  top: 63%;
+  width: 52%;
+  transform: rotateY(-20deg) rotateZ(5deg);
+}
+
 .count {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 8rem));
@@ -207,17 +329,26 @@ a.cta:hover {
   margin-top: 1.4rem;
 }
 
-.count div {
+.count-unit {
+  position: relative;
   padding: 0.85rem 0.7rem;
-  border: 1px solid rgba(31, 154, 98, 0.35);
+  border: 1px solid rgba(31, 154, 98, 0.16);
+  background: rgba(7, 10, 8, 0.38);
+}
+
+.telemetry.is-active .count-unit {
+  animation: unit-activate 560ms ease-out var(--unit-delay) both;
 }
 
 .count strong {
   display: block;
+  min-width: 2ch;
   font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #f1f7f3;
 }
 
 .count span,
@@ -239,6 +370,54 @@ a.cta:hover {
   margin: 1.2rem 0 0;
   padding: 0;
   list-style: none;
+}
+
+.signal-line {
+  position: relative;
+  width: min(100%, 34rem);
+  height: 1px;
+  margin-top: 1rem;
+  overflow: hidden;
+  background: rgba(31, 154, 98, 0.2);
+}
+
+.signal-line i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16%;
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(133, 228, 181, 0.86), transparent);
+}
+
+.telemetry.is-active .signal-line i {
+  opacity: 1;
+  animation: signal-travel 5.5s linear 0.7s infinite;
+}
+
+.signal-drop {
+  position: absolute;
+  z-index: 1;
+  left: clamp(1.1rem, 4vw, 3rem);
+  bottom: -5.5rem;
+  width: 1px;
+  height: 7.5rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(31, 154, 98, 0.24), transparent);
+}
+
+.signal-drop i {
+  display: block;
+  width: 1px;
+  height: 42%;
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, rgba(133, 228, 181, 0.62), transparent);
+}
+
+.telemetry.is-active .signal-drop i {
+  opacity: 1;
+  animation: signal-drop 5.5s ease-in-out 1.4s infinite;
 }
 
 .split {
@@ -367,6 +546,51 @@ a.cta:hover {
   padding-bottom: 5rem;
 }
 
+@keyframes unit-activate {
+  0% {
+    border-color: rgba(31, 154, 98, 0.16);
+  }
+  45% {
+    border-color: rgba(121, 221, 171, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(50, 154, 101, 0.16);
+  }
+  100% {
+    border-color: rgba(31, 154, 98, 0.38);
+    box-shadow: none;
+  }
+}
+
+@keyframes signal-travel {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(720%);
+  }
+}
+
+@keyframes signal-drop {
+  0%,
+  45% {
+    transform: translateY(-110%);
+  }
+  75%,
+  100% {
+    transform: translateY(250%);
+  }
+}
+
+@keyframes tower-pulse {
+  0%,
+  8%,
+  100% {
+    opacity: 0.32;
+  }
+  4% {
+    opacity: 0.9;
+  }
+}
+
 @media (max-width: 860px) {
   .mast {
     align-items: flex-start;
@@ -390,11 +614,39 @@ a.cta:hover {
   .hero-stage {
     height: 24rem;
   }
+
+  .telemetry {
+    min-height: 0;
+  }
+
+  .telemetry-structure {
+    top: 8%;
+    right: 2%;
+    height: 48%;
+    opacity: 0.12;
+  }
+
+  .count {
+    grid-template-columns: repeat(2, minmax(0, 8rem));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scan,
-  .command.is-leaving {
+  .command.is-leaving,
+  .telemetry.is-active .count-unit,
+  .telemetry.is-active .signal-line i,
+  .telemetry.is-active .signal-drop i,
+  .tower-cap::after {
     animation: none;
+  }
+
+  .telemetry.is-active .count-unit {
+    border-color: rgba(31, 154, 98, 0.38);
+  }
+
+  .telemetry.is-active .signal-line i,
+  .telemetry.is-active .signal-drop i {
+    display: none;
   }
 }
