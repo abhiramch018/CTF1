@@ -202,25 +202,54 @@ a.cta:hover {
 
 .count {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 8rem));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  justify-content: start;
   gap: 0.75rem;
-  margin-top: 1.4rem;
+  width: min(100%, 34rem);
+  margin-top: 1.5rem;
 }
 
-.count div {
-  padding: 0.85rem 0.7rem;
-  border: 1px solid rgba(31, 154, 98, 0.35);
+.count-card {
+  padding: 0.85rem 0.7rem 0.75rem;
+  border: 1px solid rgba(31, 154, 98, 0.28);
+  background: transparent;
+  transition: border-color 0.45s ease;
+  transition-delay: calc(var(--i) * 80ms);
+}
+
+.telemetry.is-hot .count-card {
+  border-color: rgba(168, 236, 204, 0.78);
 }
 
 .count strong {
-  display: block;
+  display: flex;
+  gap: 0.04em;
   font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  color: #f4f7f5;
 }
 
-.count span,
+.digit {
+  display: inline-block;
+  min-width: 0.68em;
+  text-align: center;
+  color: #8fd8b4;
+}
+
+.digit.is-set {
+  color: #f4f7f5;
+}
+
+.count-card > span {
+  display: block;
+  margin-top: 0.4rem;
+}
+
+.count-card > span,
 .fact-row,
 .rules,
 .dates dt,
@@ -392,9 +421,219 @@ a.cta:hover {
   }
 }
 
+.telemetry {
+  position: relative;
+  overflow: visible;
+  padding-top: clamp(3.4rem, 9vh, 5.6rem);
+  padding-bottom: clamp(3.4rem, 10vh, 6rem);
+}
+
+.telemetry-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 46%, #000 64%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, transparent 46%, #000 64%, #000 94%, transparent 100%);
+}
+
+.telemetry-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.signal-tower {
+  position: absolute;
+  right: 4%;
+  bottom: 5%;
+  width: min(16rem, 32vw);
+  max-height: 74%;
+  height: auto;
+  opacity: 0.96;
+}
+
+.signal-tower polygon {
+  stroke: #070a08;
+  stroke-width: 0.7;
+}
+
+.signal-tower .top {
+  fill: #24342c;
+}
+
+.signal-tower .south {
+  fill: #18241e;
+}
+
+.signal-tower .east {
+  fill: #121a16;
+}
+
+.signal-tower .top.is-tip {
+  animation: tip-pulse 5.8s ease-in-out infinite;
+}
+
+.signal-tower .south.is-tip,
+.signal-tower .east.is-tip {
+  animation: tip-pulse-side 5.8s ease-in-out infinite;
+}
+
+.telemetry .fact-row {
+  max-width: calc(100% - 22rem);
+  margin-top: 1.45rem;
+}
+
+.signal {
+  position: relative;
+  width: 100%;
+  margin-top: 1.35rem;
+}
+
+.signal-track {
+  position: relative;
+  width: calc(100% - 20rem);
+  height: 1px;
+  overflow: hidden;
+  background: rgba(143, 216, 180, 0.42);
+}
+
+.signal-scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11%;
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(143, 216, 180, 0.12) 36%,
+    rgba(232, 255, 244, 0.95) 50%,
+    rgba(143, 216, 180, 0.12) 64%,
+    transparent 100%
+  );
+}
+
+.telemetry.is-hot .signal-scan {
+  opacity: 1;
+  animation: signal-run 11s linear infinite;
+}
+
+.signal-drop {
+  position: absolute;
+  top: 0;
+  left: calc(100% - 20rem);
+  width: 1px;
+  height: var(--drop-px, 0px);
+  opacity: calc(1 - max(0, var(--drop-fade, 0) - 0.28) * 1.35);
+  background: linear-gradient(180deg, rgba(210, 247, 230, 0.72), rgba(31, 154, 98, 0.34) 38%, rgba(31, 154, 98, 0) 100%);
+  pointer-events: none;
+}
+
+@keyframes tip-pulse {
+  0%,
+  68%,
+  100% {
+    fill: #24342c;
+  }
+  80% {
+    fill: #2f7a52;
+  }
+}
+
+@keyframes tip-pulse-side {
+  0%,
+  68%,
+  100% {
+    fill: #101815;
+  }
+  80% {
+    fill: #1c4332;
+  }
+}
+
+@keyframes signal-run {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(880%);
+  }
+}
+
+@media (max-width: 860px) {
+  .count {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(100%, 34rem);
+  }
+
+  .telemetry {
+    padding-bottom: 8.5rem;
+  }
+
+  .telemetry .fact-row {
+    max-width: none;
+    padding-right: 0.85rem;
+  }
+
+  .signal-track {
+    width: 100%;
+  }
+
+  .signal-drop {
+    left: auto;
+    right: 0;
+  }
+
+  .telemetry-field {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .signal-tower {
+    right: 0.35rem;
+    bottom: 0.55rem;
+    width: 6.5rem;
+    max-height: 6.5rem;
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 560px) {
+  .count {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 22rem;
+  }
+
+  .count-card {
+    padding: 0.7rem 0.45rem 0.6rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scan,
-  .command.is-leaving {
+  .command.is-leaving,
+  .signal-scan,
+  .telemetry.is-hot .signal-scan,
+  .signal-tower .top.is-tip,
+  .signal-tower .south.is-tip,
+  .signal-tower .east.is-tip {
     animation: none;
+  }
+
+  .count-card,
+  .digit {
+    transition: none;
+  }
+
+  .signal-scan,
+  .signal-drop {
+    display: none;
+  }
+
+  .digit,
+  .digit.is-set {
+    color: #f4f7f5;
   }
 }
