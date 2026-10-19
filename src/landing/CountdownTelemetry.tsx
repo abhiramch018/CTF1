@@ -133,7 +133,7 @@ export function CountdownTelemetry() {
         observer.disconnect()
         window.requestAnimationFrame(() => setArmed(true))
       },
-      { threshold: 0.55, rootMargin: '0px 0px -12% 0px' },
+      { threshold: 0.28, rootMargin: '0px 0px -6% 0px' },
     )
     observer.observe(node)
     return () => observer.disconnect()
