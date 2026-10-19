@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Opening } from './cinematic/Opening.tsx'
+import { CountdownTelemetry } from './countdown/CountdownTelemetry.tsx'
 
 type View = 'intro' | 'enter' | 'command'
 
@@ -16,10 +17,21 @@ export default function App() {
     window.setTimeout(() => setView('command'), ENTRY_MS)
   }
 
+  // The intro locks body scroll for its fixed stage; the command page is a
+  // normal vertically scrolling document.
+  useEffect(() => {
+    if (view !== 'command') return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'auto'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [view])
+
   if (view === 'command') {
     return (
-      <main className="command">
-        <h1>ACCESS GRANTED — COMMAND CENTER</h1>
+      <main className="command-page">
+        <CountdownTelemetry />
       </main>
     )
   }

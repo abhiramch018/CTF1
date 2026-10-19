@@ -1,0 +1,303 @@
+/* Countdown Telemetry — calm black/emerald system surface.
+   Ambient layers sit far behind the text at low contrast; nothing here
+   locks, hijacks, or horizontally moves the page. */
+
+.command-page {
+  min-height: 100vh;
+  background: #070a08;
+  color: #e7fff4;
+  overflow-x: clip;
+}
+
+.telemetry {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: clamp(4.5rem, 12vh, 8rem) clamp(1.25rem, 6vw, 5.5rem) 0;
+}
+
+/* ---- far-background ambient detail (behind all text) ---- */
+.telemetry-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: clip;
+}
+
+.tower {
+  position: absolute;
+  right: clamp(-7rem, -4vw, -2rem);
+  top: 50%;
+  width: min(400px, 62vw);
+  transform: translateY(-46%);
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 34%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 34%, #000 88%, transparent);
+}
+
+.vox-top { fill: #0e1712; }
+.vox-left { fill: #0a100c; }
+.vox-right { fill: #0c130e; }
+.vox polygon { stroke: rgba(82, 214, 154, 0.13); stroke-width: 1; }
+.vox.is-dim polygon { stroke: rgba(82, 214, 154, 0.07); }
+
+.rail { stroke: rgba(82, 214, 154, 0.16); stroke-width: 1; }
+.rail.is-faint { stroke: rgba(82, 214, 154, 0.07); }
+.rail-tick { fill: rgba(82, 214, 154, 0.18); }
+.antenna { stroke: rgba(82, 214, 154, 0.28); stroke-width: 1.5; }
+
+.beacon { fill: #34d399; opacity: 0.35; animation: beacon-pulse 5.2s ease-in-out infinite; }
+.beacon-halo {
+  fill: none;
+  stroke: rgba(52, 211, 153, 0.35);
+  stroke-width: 1;
+  opacity: 0;
+  transform-origin: 180px 14px;
+  animation: beacon-pulse 5.2s ease-in-out infinite;
+}
+
+@keyframes beacon-pulse {
+  0%, 100% { opacity: 0.18; }
+  8% { opacity: 0.55; }
+  20% { opacity: 0.22; }
+}
+
+/* ---- content ---- */
+.telemetry-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.telemetry-kicker {
+  margin: 0 0 1rem;
+  color: #9ee6c3;
+  font-size: 0.7rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+.telemetry-heading {
+  margin: 0;
+  max-width: 12em;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6.5vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  color: #f4f7f5;
+}
+
+.telemetry-sub {
+  margin: 1.1rem 0 0;
+  max-width: 34rem;
+  color: #b9cfc2;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.telemetry-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 2.75rem;
+  color: #8fd8b4;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2b4a3a;
+  flex: none;
+}
+
+.status-dot.is-live {
+  background: #34d399;
+  animation: status-breathe 4.6s ease-in-out infinite;
+}
+
+@keyframes status-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.status-rule {
+  width: min(120px, 22vw);
+  height: 1px;
+  background: rgba(82, 214, 154, 0.22);
+}
+
+/* ---- countdown cards ---- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  margin-top: 1.1rem;
+}
+
+.card {
+  position: relative;
+  padding: clamp(1rem, 2.4vw, 1.6rem) clamp(0.9rem, 2vw, 1.4rem) 1rem;
+  background: rgba(13, 20, 16, 0.55);
+  border: 1px solid rgba(184, 244, 214, 0.13);
+  transition: border-color 0.6s ease var(--d, 0ms);
+}
+
+/* thin emerald activation edge, swept once per card */
+.card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, #34d399, rgba(52, 211, 153, 0.15));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.card.is-armed::before {
+  animation: card-arm 0.7s cubic-bezier(0.22, 0.8, 0.3, 1) var(--d, 0ms) both;
+}
+
+@keyframes card-arm {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.card.is-settled { border-color: rgba(82, 214, 154, 0.42); }
+
+.card-value {
+  display: block;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #f4f7f5;
+  font-variant-numeric: tabular-nums;
+  min-height: 1em;
+}
+
+.card-label {
+  display: block;
+  margin-top: 0.7rem;
+  color: #8fd8b4;
+  font-size: 0.66rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* ---- event details ---- */
+.telemetry-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.25rem 2rem;
+  margin: 2.75rem 0 0;
+  padding: 0;
+}
+
+.detail dt {
+  color: #7fae96;
+  font-size: 0.64rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.detail dd {
+  margin: 0.45rem 0 0;
+  color: #e7fff4;
+  font-size: 0.98rem;
+}
+
+/* ---- signal line + scroll-linked tail ---- */
+.signal {
+  margin-top: clamp(2.5rem, 6vh, 4rem);
+  container-type: inline-size;
+}
+
+.signal-track {
+  position: relative;
+  height: 1px;
+  background: rgba(82, 214, 154, 0.16);
+  overflow: visible;
+}
+
+.signal-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 72px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 0.85), transparent);
+  animation: signal-travel 7.5s linear infinite;
+  will-change: transform;
+}
+
+@keyframes signal-travel {
+  from { transform: translateX(-80px); }
+  to { transform: translateX(100cqw); }
+}
+
+.signal-tail {
+  width: 1px;
+  height: 28px;
+  margin-left: 1px;
+  background: linear-gradient(180deg, rgba(82, 214, 154, 0.55), rgba(82, 214, 154, 0));
+  opacity: 0.9;
+}
+
+/* ---- following section (signal fades into it) ---- */
+.mission {
+  position: relative;
+  padding: clamp(3rem, 9vh, 6rem) clamp(1.25rem, 6vw, 5.5rem) clamp(6rem, 14vh, 9rem);
+  background: #070a08;
+}
+
+.mission-inner {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.mission-heading {
+  margin: 0;
+  font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: 0.03em;
+  color: #f4f7f5;
+}
+
+.mission-copy {
+  margin: 1rem 0 0;
+  max-width: 36rem;
+  color: #b9cfc2;
+  line-height: 1.65;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 640px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tower { opacity: 0.32; width: 78vw; right: -34vw; }
+  .signal-pulse { animation-duration: 6s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beacon,
+  .beacon-halo,
+  .status-dot.is-live,
+  .signal-pulse,
+  .card.is-armed::before {
+    animation: none;
+  }
+  .beacon { opacity: 0.35; }
+  .beacon-halo { opacity: 0; }
+  .signal-pulse { display: none; }
+  .card { transition: none; }
+  .card.is-settled { border-color: rgba(82, 214, 154, 0.42); }
+}
