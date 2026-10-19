@@ -269,6 +269,7 @@ button:active {
 .command {
   position: fixed;
   inset: 0;
+  z-index: 30;
   display: grid;
   place-items: center;
   background: #070a08;
@@ -283,6 +284,46 @@ button:active {
   font-weight: 500;
   letter-spacing: 0.22em;
   text-align: center;
+}
+
+.command.is-leaving {
+  animation: command-out 0.7s ease forwards;
+}
+
+.scan {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scan::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #1f9a62;
+  box-shadow: 0 0 10px rgba(31, 154, 98, 0.35);
+  animation: scan-pass 0.7s ease forwards;
+}
+
+@keyframes command-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes scan-pass {
+  from {
+    top: 0;
+    opacity: 0.9;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
 @keyframes lockup-in {
