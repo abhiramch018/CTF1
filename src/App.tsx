@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <>
-      {showLanding ? <LandingPage /> : null}
+      {showLanding ? <LandingPage live={view === 'landing'} /> : null}
       {view === 'intro' || view === 'enter' ? (
         <Opening onContinue={continueIn} continuing={view === 'enter'} />
       ) : null}
