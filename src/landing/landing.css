@@ -498,9 +498,14 @@ a.cta:hover {
   perspective: 1400px;
 }
 
-.sector-portal-backdrop {
+.sector-portal-backdrop,
+.sector-portal-backdrop:hover,
+.sector-portal-backdrop:focus,
+.sector-portal-backdrop:focus-visible,
+.sector-portal-backdrop:active {
   position: absolute;
   inset: 0;
+  z-index: 0;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -508,18 +513,35 @@ a.cta:hover {
   border-radius: 0;
   letter-spacing: normal;
   text-transform: none;
-  background: rgba(7, 12, 10, 0.28);
+  color: transparent;
+  /* Lock tint across all button states — global button:hover must not repaint this */
+  background: rgba(5, 10, 8, 0.62);
+  box-shadow: none;
+  outline: none;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.35s ease;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
 }
 
-.sector-portal.is-live .sector-portal-backdrop {
+.sector-portal.is-live .sector-portal-backdrop,
+.sector-portal.is-live .sector-portal-backdrop:hover,
+.sector-portal.is-live .sector-portal-backdrop:focus,
+.sector-portal.is-live .sector-portal-backdrop:focus-visible,
+.sector-portal.is-live .sector-portal-backdrop:active {
   opacity: 1;
+  background: rgba(5, 10, 8, 0.62);
 }
 
-.sector-portal.is-exit .sector-portal-backdrop {
+.sector-portal.is-exit .sector-portal-backdrop,
+.sector-portal.is-exit .sector-portal-backdrop:hover,
+.sector-portal.is-exit .sector-portal-backdrop:focus,
+.sector-portal.is-exit .sector-portal-backdrop:focus-visible,
+.sector-portal.is-exit .sector-portal-backdrop:active {
   opacity: 0;
+  background: rgba(5, 10, 8, 0.62);
   transition-duration: 0.3s;
 }
 
@@ -545,6 +567,16 @@ a.cta:hover {
   background:
     linear-gradient(180deg, rgba(10, 18, 14, 0.97), rgba(7, 10, 8, 0.98));
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sector-briefing:hover .sector-briefing-frame {
+    border-color: rgba(158, 230, 195, 0.62);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+  }
 }
 
 .sector-briefing-head {
