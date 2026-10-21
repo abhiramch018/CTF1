@@ -187,6 +187,7 @@ a.cta:hover {
 .band h2,
 .brief-head h3,
 .sector-briefing-head h3,
+.route-card h3,
 .protocol h3 {
   margin: 0;
   font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
@@ -685,38 +686,298 @@ a.cta:hover {
   border-color: #e7fff4;
 }
 
-.protocol {
+/* —— Operation route (Protocol) —— */
+.route-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.route-terrain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background:
+    linear-gradient(rgba(31, 154, 98, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 154, 98, 0.09) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 20%, rgba(14, 48, 34, 0.5), transparent 48%);
+  background-size: 32px 32px, 32px 32px, auto;
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.route-band > .band-head,
+.route-band > .route-track,
+.route-band > .route-rules,
+.route-band > .route-dates {
+  position: relative;
+  z-index: 1;
+}
+
+.route-track {
+  position: relative;
+  margin-top: 1.6rem;
+  padding: 0.4rem 0 0.6rem;
+  perspective: 1100px;
+}
+
+.route-spine {
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.route-spine-base {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 154, 98, 0.22);
+}
+
+.route-spine-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(31, 154, 98, 0.35), rgba(158, 230, 195, 0.72));
+  transition: height 0.12s linear;
+}
+
+.route-signal {
+  position: absolute;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 1px solid rgba(158, 230, 195, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(14, 28, 22, 0.95) 42%, rgba(31, 154, 98, 0.35) 70%, transparent 72%);
+  box-shadow: 0 0 0 1px rgba(7, 10, 8, 0.7);
+  transition: top 0.12s linear;
+}
+
+.route-signal.is-pulse {
+  animation: route-node-pulse 0.5s ease-out;
+}
+
+.route-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-top: 1.2rem;
+  gap: 1.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.protocol article {
-  padding: 1rem;
-  border: 1px solid rgba(31, 154, 98, 0.28);
+.route-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: center;
+  --route-tilt-x: 0deg;
+  --route-tilt-y: 0deg;
+  --route-lift: 0px;
 }
 
-.protocol h3 {
-  margin-bottom: 0.45rem;
-  font-size: 1.45rem;
+.route-stop--left .route-card {
+  grid-column: 1;
+  justify-self: end;
+  max-width: 28rem;
+  width: 100%;
+  transform-origin: right center;
 }
 
-.dates {
+.route-stop--right .route-card {
+  grid-column: 2;
+  justify-self: start;
+  max-width: 28rem;
+  width: 100%;
+  transform-origin: left center;
+}
+
+.route-dot {
+  position: absolute;
+  top: 1.35rem;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1px solid rgba(31, 154, 98, 0.45);
+  border-radius: 50%;
+  background: #070a08;
+  z-index: 2;
+  transition: border-color 0.35s ease, background 0.35s ease;
+}
+
+.route-stop.is-reached .route-dot {
+  border-color: #9ee6c3;
+  background: #1f9a62;
+}
+
+.route-stop.is-pulse .route-dot {
+  animation: route-node-pulse 0.5s ease-out;
+}
+
+.route-card {
+  position: relative;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border: 1px solid rgba(31, 154, 98, 0.34);
+  background: rgba(7, 12, 10, 0.72);
+  opacity: 0;
+  transform:
+    translate3d(0, 32px, -20px)
+    rotateY(var(--route-recess-y, 0deg));
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    transform 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  will-change: transform, opacity;
+}
+
+.route-stop--left {
+  --route-recess-y: 3deg;
+}
+
+.route-stop--right {
+  --route-recess-y: -3deg;
+}
+
+.route-stop.is-in .route-card {
+  opacity: 1;
+  --route-recess-y: 0deg;
+  transform:
+    translate3d(0, var(--route-lift), 0)
+    rotateX(var(--route-tilt-x))
+    rotateY(var(--route-tilt-y));
+}
+
+.route-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .route-stop.is-in .route-card:hover {
+    border-color: rgba(158, 230, 195, 0.55);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  }
+
+  .route-card[data-edge="left"]::before {
+    opacity: 1;
+    background: linear-gradient(90deg, rgba(184, 244, 214, 0.55) 0%, rgba(31, 154, 98, 0.18) 8%, transparent 18%);
+  }
+
+  .route-card[data-edge="right"]::before {
+    opacity: 1;
+    background: linear-gradient(270deg, rgba(184, 244, 214, 0.55) 0%, rgba(31, 154, 98, 0.18) 8%, transparent 18%);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .route-card:active {
+    border-color: rgba(158, 230, 195, 0.5);
+    transform: translate3d(0, 1px, 0);
+  }
+}
+
+.route-card-head {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease 0.42s, transform 0.35s ease 0.42s;
+}
+
+.route-card-head.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.route-code {
+  margin: 0 0 0.4rem;
+  color: #8fd8b4;
+  font-size: 0.64rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.route-card h3 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+  line-height: 1;
+}
+
+.route-card-body {
+  margin: 0;
+  min-height: 3.6em;
+  color: #d5e6dc;
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.route-card-body.is-shown {
+  opacity: 1;
+}
+
+.route-caret {
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.1em;
+  vertical-align: text-bottom;
+  background: rgba(158, 230, 195, 0.7);
+  animation: route-caret 0.8s steps(1) infinite;
+}
+
+.route-rules {
+  margin-top: 1.8rem;
+}
+
+.dates,
+.route-dates {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
   margin: 1rem 0 0;
 }
 
-.dates div {
+.dates div,
+.route-dates div {
   padding-top: 0.65rem;
   border-top: 1px solid rgba(31, 154, 98, 0.35);
 }
 
-.dates dd {
+.dates dd,
+.route-dates dd {
   margin: 0.3rem 0 0;
   color: #f4f7f5;
+}
+
+@keyframes route-node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(158, 230, 195, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(158, 230, 195, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(158, 230, 195, 0);
+  }
+}
+
+@keyframes route-caret {
+  50% {
+    opacity: 0;
+  }
 }
 
 .partner-grid {
@@ -786,8 +1047,8 @@ a.cta:hover {
 
   .hero,
   .mission-grid,
-  .protocol,
   .dates,
+  .route-dates,
   .partner-grid,
   .count,
   .sector-briefing-body,
@@ -801,6 +1062,33 @@ a.cta:hover {
 
   .hero-stage {
     height: 24rem;
+  }
+
+  .route-spine {
+    left: 0.55rem;
+    transform: none;
+  }
+
+  .route-stop {
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: 0.85rem;
+  }
+
+  .route-stop--left .route-card,
+  .route-stop--right .route-card {
+    grid-column: 2;
+    justify-self: stretch;
+    max-width: none;
+    transform-origin: left center;
+  }
+
+  .route-dot {
+    left: 0.55rem;
+    margin-left: -4px;
+  }
+
+  .route-signal {
+    left: 0.55rem;
   }
 }
 
@@ -822,14 +1110,26 @@ a.cta:hover {
   .scan,
   .command.is-leaving,
   .brief-scan,
-  .sector-tag.is-scanning .sector-tag-scan {
+  .sector-tag.is-scanning .sector-tag-scan,
+  .route-signal.is-pulse,
+  .route-stop.is-pulse .route-dot,
+  .route-caret {
     animation: none;
   }
 
   .brief-block,
-  .mission-band.is-in .brief-block {
+  .mission-band.is-in .brief-block,
+  .route-card,
+  .route-stop.is-in .route-card,
+  .route-card-head,
+  .route-card-body {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+
+  .route-spine-progress,
+  .route-signal {
     transition: none;
   }
 

@@ -138,4 +138,55 @@ export const missionBrief = {
   },
 } as const
 
+export const operationRoute = [
+  {
+    id: 'qualifier',
+    code: '01',
+    label: 'QUALIFIER',
+    title: 'Online qualifier',
+    body: '06 Dec 2026, 09:00–21:00 IST. Twelve hours, remote. Submit flags and a writeup so the run can be verified.',
+  },
+  {
+    id: 'advancement',
+    code: '02',
+    label: 'ADVANCEMENT',
+    title: 'Advancement',
+    body: 'Up to 35 teams from the leaderboard and up to 5 wildcards advance from the online qualifier.',
+  },
+  {
+    id: 'finalists',
+    code: '03',
+    label: 'FINALISTS NAMED',
+    title: 'Finalists named',
+    body: 'Finalists are named on 08 Dec 2026.',
+  },
+  {
+    id: 'finals',
+    code: '04',
+    label: 'OFFLINE FINALS',
+    title: 'Offline finals',
+    body: '26–27 Dec 2026, 10:00 on the 26th through 16:00 on the 27th. KLEF campus, Vaddeswaram. Up to 40 teams.',
+  },
+  {
+    id: 'rewards',
+    code: '05',
+    label: 'REWARDS',
+    title: 'Rewards',
+    body: '₹1,00,000 for the top three: ₹50,000, ₹30,000, and ₹20,000, plus certificates and event marks. Ranks 4–10 and all finalists receive certificates. Online players receive e-certificates.',
+  },
+] as const
+
+export const protocolRules = [
+  'Attack only the systems the organisers provide.',
+  'Flag format is DNCTF{...}. Scoring is dynamic.',
+  'Hints may cost points. The full rulebook comes from the organisers.',
+  'Registration is ₹200 per player. The public link is not published yet.',
+] as const
+
+export const protocolDates = [
+  { label: 'Qualifier', value: '06 Dec 2026' },
+  { label: 'Finalists named', value: '08 Dec 2026' },
+  { label: 'Finals', value: '26–27 Dec 2026' },
+] as const
+
 export const QUALIFIER_AT = Date.parse('2026-12-06T03:30:00.000Z')

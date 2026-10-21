@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HeroVista } from './HeroVista.tsx'
 import { MissionBriefing } from './MissionBriefing.tsx'
+import { OperationRoute } from './OperationRoute.tsx'
 import { SectorRange } from './SectorRange.tsx'
 import { nav, partners, QUALIFIER_AT, registrationUrl } from './content.ts'
 import './landing.css'
@@ -124,51 +125,7 @@ export function LandingPage() {
 
         <MissionBriefing />
         <SectorRange />
-
-        <section id="format" className="band">
-          <div className="band-head">
-            <p className="eyebrow">Protocol</p>
-            <h2>Format, rules, rewards, dates</h2>
-          </div>
-          <div className="protocol">
-            <article>
-              <h3>Online qualifier</h3>
-              <p>06 Dec 2026, 09:00–21:00 IST. Twelve hours, remote. Submit flags and a writeup so the run can be verified.</p>
-            </article>
-            <article>
-              <h3>Offline finals</h3>
-              <p>26–27 Dec 2026, 10:00 on the 26th through 16:00 on the 27th. KLEF campus, Vaddeswaram. Up to 40 teams.</p>
-            </article>
-            <article>
-              <h3>Advancement</h3>
-              <p>Up to 35 teams from the leaderboard and up to 5 wildcards. Finalists are named on 08 Dec 2026.</p>
-            </article>
-            <article>
-              <h3>Rewards</h3>
-              <p>₹1,00,000 for the top three: ₹50,000, ₹30,000, and ₹20,000, plus certificates and event marks. Ranks 4–10 and all finalists receive certificates. Online players receive e-certificates.</p>
-            </article>
-          </div>
-          <ul className="rules">
-            <li>Attack only the systems the organisers provide.</li>
-            <li>Flag format is DNCTF{'{...}'}. Scoring is dynamic.</li>
-            <li>Hints may cost points. The full rulebook comes from the organisers.</li>
-            <li>Registration is ₹200 per player. The public link is not published yet.</li>
-          </ul>
-          <dl className="dates">
-            <div>
-              <dt>Qualifier</dt>
-              <dd>06 Dec 2026</dd>
-            </div>
-            <div>
-              <dt>Finalists named</dt>
-              <dd>08 Dec 2026</dd>
-            </div>
-            <div>
-              <dt>Finals</dt>
-              <dd>26–27 Dec 2026</dd>
-            </div>
-          </dl>
-        </section>
+        <OperationRoute />
 
         <section id="partners" className="band">
           <div className="band-head">
