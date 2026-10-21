@@ -27,7 +27,19 @@ function Block({
   )
 }
 
-export function Operative({ pose, shadows }: { pose: RefObject<Pose>; shadows: boolean }) {
+export function Operative({
+  pose,
+  shadows,
+  signalBoost,
+  heroLit = false,
+}: {
+  pose: RefObject<Pose>
+  shadows: boolean
+  /** Extra chest/device emissive boost for hero Breach Wake (0–1). */
+  signalBoost?: RefObject<number>
+  /** Brighter base materials for the landing hero scene only. */
+  heroLit?: boolean
+}) {
   const root = useRef<THREE.Group>(null)
   const bob = useRef<THREE.Group>(null)
   const hipL = useRef<THREE.Group>(null)
@@ -45,32 +57,32 @@ export function Operative({ pose, shadows }: { pose: RefObject<Pose>; shadows: b
     return {
       cloak: new THREE.MeshStandardMaterial({
         ...shared,
-        color: '#121816',
+        color: heroLit ? '#2a3832' : '#121816',
         roughness: 0.88,
         metalness: 0.06,
       }),
       armor: new THREE.MeshStandardMaterial({
         ...shared,
-        color: '#1b2420',
+        color: heroLit ? '#4a5c52' : '#1b2420',
         roughness: 0.42,
         metalness: 0.64,
       }),
       shade: new THREE.MeshStandardMaterial({
         ...shared,
-        color: '#090c0a',
+        color: heroLit ? '#222a26' : '#090c0a',
         roughness: 0.94,
         metalness: 0.04,
       }),
       signal: new THREE.MeshStandardMaterial({
         ...shared,
         color: '#0c2418',
-        emissive: '#1f9a62',
-        emissiveIntensity: 0.42,
+        emissive: heroLit ? '#34d399' : '#1f9a62',
+        emissiveIntensity: heroLit ? 1.15 : 0.42,
         roughness: 0.32,
         metalness: 0.38,
       }),
     }
-  }, [])
+  }, [heroLit])
 
   useEffect(() => {
     return () => {
@@ -115,7 +127,10 @@ export function Operative({ pose, shadows }: { pose: RefObject<Pose>; shadows: b
     const time = clock.elapsedTime
     head.current.rotation.y = Math.sin(time * 0.5) * 0.04 * idle
     head.current.rotation.x = Math.sin(time * 0.38) * 0.016 * idle
-    materials.signal.emissiveIntensity = 0.34 + Math.sin(time * 1.45) * 0.08
+    const boost = signalBoost?.current ?? 0
+    const baseSignal = heroLit ? 0.85 : 0.4
+    materials.signal.emissiveIntensity =
+      baseSignal + Math.sin(time * 1.45) * 0.1 + Math.max(0, boost) * (heroLit ? 2.4 : 1.45)
     group.traverse((child) => {
       if (child instanceof THREE.Mesh) child.castShadow = shadows && opacity > 0.4
     })

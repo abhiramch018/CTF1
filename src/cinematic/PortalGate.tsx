@@ -64,26 +64,41 @@ const portalFragment = /* glsl */ `
   #include <fog_pars_fragment>
   void main() {
     float x = abs(vUv.x - 0.5) * 2.0;
-    float core = pow(1.0 - smoothstep(0.0, 1.0, x), 1.45);
-    float side = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);
-    float vertical = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.94, vUv.y);
-    float flow = 0.84 + 0.16 * sin(vUv.y * 16.0 - uTime * 1.25);
-    float thread = smoothstep(0.9, 1.0, sin(vUv.y * 34.0 - uTime * 0.7));
-    vec3 deep = vec3(0.035, 0.2, 0.12);
-    vec3 mint = vec3(0.5, 0.9, 0.72);
-    vec3 color = mix(deep, mint, core);
-    color += mint * thread * core * 0.12;
-    float alpha = clamp(uPower * core * side * vertical * flow, 0.0, 0.62);
+    float seamCore = pow(1.0 - smoothstep(0.0, 1.0, x), 1.45);
+    // As the gate unlocks, fill the aperture instead of a thin center line.
+    float fill = mix(seamCore, 1.0 - x * 0.42, clamp(uPower * 1.15, 0.0, 1.0));
+    float side = smoothstep(0.0, 0.04, vUv.x) * smoothstep(1.0, 0.96, vUv.x);
+    float vertical = smoothstep(0.0, 0.06, vUv.y) * smoothstep(1.0, 0.94, vUv.y);
+    float flow = 0.82 + 0.18 * sin(vUv.y * 14.0 - uTime * 1.15);
+    float thread = smoothstep(0.88, 1.0, sin(vUv.y * 28.0 - uTime * 0.65));
+    float depthBand = 0.55 + 0.45 * sin(vUv.y * 9.0 - uTime * 0.55);
+    vec3 deep = vec3(0.02, 0.16, 0.1);
+    vec3 mint = vec3(0.48, 0.9, 0.7);
+    vec3 color = mix(deep, mint, fill * depthBand);
+    color += mint * thread * fill * 0.14;
+    float alpha = clamp(uPower * fill * side * vertical * flow, 0.0, 0.78);
     gl_FragColor = vec4(color, alpha);
     #include <fog_fragment>
   }
 `
 
-export function PortalGate({ pose }: { pose: RefObject<Pose> }) {
+export function PortalGate({
+  pose,
+  leafTravel = 0.62,
+  wideEnergy = false,
+}: {
+  pose: RefObject<Pose>
+  /** Horizontal door-leaf travel multiplier (hero uses a wider unlock). */
+  leafTravel?: number
+  /** Widen the energy aperture with portal power (hero Breach Wake). */
+  wideEnergy?: boolean
+}) {
   const leftLeaf = useRef<THREE.Group>(null)
   const rightLeaf = useRef<THREE.Group>(null)
   const tablets = useRef<THREE.Group>(null)
-  const seam = useRef<THREE.MeshStandardMaterial>(null)
+  const seam = useRef<THREE.Mesh>(null)
+  const seamMat = useRef<THREE.MeshStandardMaterial>(null)
+  const energyMesh = useRef<THREE.Mesh>(null)
   const beamCore = useRef<THREE.MeshBasicMaterial>(null)
   const beamHalo = useRef<THREE.MeshBasicMaterial>(null)
   const beam = useRef<THREE.Group>(null)
@@ -166,13 +181,29 @@ export function PortalGate({ pose }: { pose: RefObject<Pose> }) {
     if (!current || !power || !time) return
     power.value = current.portal
     time.value = preferences.reduce ? 2.4 : clock.elapsedTime
-    if (leftLeaf.current) leftLeaf.current.position.x = GATE.x - 0.46 - current.portal * 0.62
-    if (rightLeaf.current) rightLeaf.current.position.x = GATE.x + 0.46 + current.portal * 0.62
-    if (seam.current) seam.current.emissiveIntensity = 0.04 + current.portal * 1.35
+    if (leftLeaf.current) leftLeaf.current.position.x = GATE.x - 0.46 - current.portal * leafTravel
+    if (rightLeaf.current) rightLeaf.current.position.x = GATE.x + 0.46 + current.portal * leafTravel
+    if (seamMat.current) {
+      // Thin dormant seam → fades as the aperture becomes a real opening
+      seamMat.current.emissiveIntensity = 0.05 + current.portal * (wideEnergy ? 0.35 : 1.2)
+      seamMat.current.opacity = wideEnergy ? Math.max(0, 0.9 - current.portal * 1.35) : 1
+      seamMat.current.transparent = wideEnergy
+    }
+    if (seam.current) {
+      seam.current.visible = !wideEnergy || current.portal < 0.72
+      seam.current.scale.x = wideEnergy ? Math.max(0.35, 1 - current.portal * 0.85) : 1
+    }
+    if (energyMesh.current && wideEnergy) {
+      // Seam → wide portal corridor fill
+      energyMesh.current.scale.x = 0.12 + current.portal * 1.55
+      energyMesh.current.scale.y = 1
+    } else if (energyMesh.current) {
+      energyMesh.current.scale.set(1, 1, 1)
+    }
     if (beam.current) beam.current.visible = current.beam > 0.03
     if (beamCore.current) beamCore.current.opacity = current.beam * 0.16
     if (beamHalo.current) beamHalo.current.opacity = current.beam * 0.04
-    if (glow.current) glow.current.intensity = current.portal * 2.8
+    if (glow.current) glow.current.intensity = current.portal * (wideEnergy ? 3.6 : 2.8)
     if (!tablets.current) return
     tablets.current.visible = current.shards > 0.03
     tablets.current.children.forEach((child, index) => {
@@ -232,19 +263,21 @@ export function PortalGate({ pose }: { pose: RefObject<Pose> }) {
         </mesh>
       </group>
 
-      <mesh position={[GATE.x, 2.28, GATE.z + 0.34]} renderOrder={3}>
+      <mesh ref={seam} position={[GATE.x, 2.28, GATE.z + 0.34]} renderOrder={3}>
         <planeGeometry args={[0.045, 3.55]} />
         <meshStandardMaterial
-          ref={seam}
+          ref={seamMat}
           color="#0e2418"
           emissive="#39d98a"
           emissiveIntensity={0.05}
           roughness={0.3}
           metalness={0.2}
+          transparent
+          opacity={1}
         />
       </mesh>
 
-      <mesh position={[GATE.x, 2.25, GATE.z - 0.08]} material={energy} renderOrder={2}>
+      <mesh ref={energyMesh} position={[GATE.x, 2.25, GATE.z - 0.08]} material={energy} renderOrder={2}>
         <planeGeometry args={[1.55, 4.2]} />
       </mesh>
 

@@ -181,12 +181,12 @@ a.cta:hover {
 
 .hero-vista {
   mask-image:
-    linear-gradient(90deg, transparent 0%, #000 10%, #000 78%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 8%, #000 82%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 5%, #000 90%, transparent 100%);
   mask-composite: intersect;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, #000 10%, #000 78%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 8%, #000 82%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 5%, #000 90%, transparent 100%);
   -webkit-mask-composite: source-in;
 }
 
@@ -197,10 +197,10 @@ a.cta:hover {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(90deg, #070a08 0%, rgba(7, 10, 8, 0.55) 8%, transparent 22%),
-    linear-gradient(270deg, rgba(7, 10, 8, 0.35) 0%, transparent 18%),
-    linear-gradient(180deg, transparent 62%, rgba(7, 10, 8, 0.55) 88%, #070a08 100%),
-    radial-gradient(ellipse at 72% 48%, transparent 42%, rgba(7, 10, 8, 0.55) 100%);
+    linear-gradient(90deg, #070a08 0%, rgba(7, 10, 8, 0.85) 5%, rgba(7, 10, 8, 0.28) 14%, transparent 26%),
+    linear-gradient(270deg, rgba(7, 10, 8, 0.55) 0%, transparent 20%),
+    linear-gradient(180deg, transparent 55%, rgba(7, 10, 8, 0.5) 80%, #070a08 100%),
+    radial-gradient(ellipse at 76% 48%, transparent 32%, rgba(7, 10, 8, 0.7) 100%);
 }
 
 .band {
