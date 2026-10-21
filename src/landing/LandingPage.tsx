@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { FinalAccess } from './FinalAccess.tsx'
 import { HeroVista } from './HeroVista.tsx'
 import { MissionBriefing } from './MissionBriefing.tsx'
 import { OperationRoute } from './OperationRoute.tsx'
@@ -142,12 +143,7 @@ export function LandingPage() {
           </ul>
         </section>
 
-        <section id="arena" className="band arena">
-          <p className="eyebrow">Final access</p>
-          <h2>ENTER THE ARENA</h2>
-          <p>The public registration link has not been published yet.</p>
-          <ArenaStatus linked={false} />
-        </section>
+        <FinalAccess />
       </main>
     </div>
   )
