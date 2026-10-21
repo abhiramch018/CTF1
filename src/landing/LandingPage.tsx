@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { HeroVista } from './HeroVista.tsx'
-import { nav, partners, QUALIFIER_AT, registrationUrl, sectors } from './content.ts'
+import { MissionBriefing } from './MissionBriefing.tsx'
+import { SectorRange } from './SectorRange.tsx'
+import { nav, partners, QUALIFIER_AT, registrationUrl } from './content.ts'
 import './landing.css'
 
 function pad(value: number): string {
@@ -39,7 +41,6 @@ function ArenaStatus({ linked }: { linked: boolean }) {
 
 export function LandingPage() {
   const [clock, setClock] = useState(() => remaining(Date.now()))
-  const [sector, setSector] = useState<(typeof sectors)[number]>(sectors[0])
 
   useEffect(() => {
     const tick = () => setClock(remaining(Date.now()))
@@ -121,52 +122,8 @@ export function LandingPage() {
           </ul>
         </section>
 
-        <section id="mission" className="band">
-          <div className="band-head">
-            <p className="eyebrow">Mission</p>
-            <h2>What is DEAD NOCTIS</h2>
-          </div>
-          <div className="split">
-            <p>
-              Season 01 is a national capture-the-flag run with KL University, Google Developer Groups, and White Hat
-              Hackers. Every flag is scored in jeopardy style. The online qualifier names the finalists. The offline
-              finals are held on campus.
-            </p>
-            <ul>
-              <li>Open across India, ages 16–28.</li>
-              <li>Any branch, any year. Cross-college teams are welcome.</li>
-              <li>Solo or duo may play the qualifier. Finals teams are up to three.</li>
-              <li>Finalists present a valid college ID at check-in.</li>
-            </ul>
-          </div>
-        </section>
-
-        <section id="sectors" className="band">
-          <div className="band-head">
-            <p className="eyebrow">Sectors</p>
-            <h2>Ten disciplines, one range</h2>
-          </div>
-          <div className="sector-board">
-            <div className="sector-list" role="group" aria-label="Challenge sectors">
-              {sectors.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-pressed={sector.id === item.id}
-                  className={sector.id === item.id ? 'is-on' : undefined}
-                  onClick={() => setSector(item)}
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-            <article className="sector-detail" aria-live="polite">
-              <p className="eyebrow">{String(sectors.findIndex((item) => item.id === sector.id) + 1).padStart(2, '0')}</p>
-              <h3>{sector.name}</h3>
-              <p>{sector.summary}</p>
-            </article>
-          </div>
-        </section>
+        <MissionBriefing />
+        <SectorRange />
 
         <section id="format" className="band">
           <div className="band-head">
