@@ -115,9 +115,12 @@ button:active {
   align-content: center;
   gap: 1.4rem;
   background: #070a08;
+  overflow: hidden;
 }
 
 .gate-note {
+  position: relative;
+  z-index: 2;
   margin: 0;
   color: #9ee6c3;
   letter-spacing: 0.42em;
@@ -126,6 +129,8 @@ button:active {
 }
 
 .begin {
+  position: relative;
+  z-index: 2;
   display: grid;
   justify-items: center;
   gap: 0.35rem;
@@ -136,6 +141,17 @@ button:active {
     linear-gradient(#1f9a62, #070a08 70%) border-box;
   border: 1px solid transparent;
   box-shadow: inset 0 -1px 0 rgba(31, 154, 98, 0.85);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.begin:hover,
+.begin:focus-visible {
+  background:
+    linear-gradient(#0a120e, #0a120e) padding-box,
+    linear-gradient(#9ee6c3, #1f9a62 55%, #070a08 100%) border-box;
+  box-shadow:
+    inset 0 -1px 0 rgba(158, 230, 195, 0.95),
+    0 0 0 1px rgba(31, 154, 98, 0.28);
 }
 
 .begin-kicker {
@@ -147,6 +163,294 @@ button:active {
 .begin-word {
   font-size: 1.05rem;
   letter-spacing: 0.42em;
+}
+
+/* —— Gate atmosphere —— */
+.gate-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  --gate-px: 0px;
+  --gate-py: 0px;
+  --gate-px-far: 0px;
+  --gate-py-far: 0px;
+}
+
+.gate-corners {
+  position: absolute;
+  inset: 0;
+}
+
+.gate-bracket {
+  position: absolute;
+  width: clamp(4.5rem, 11vw, 6.5rem);
+  height: clamp(4.5rem, 11vw, 6.5rem);
+  color: rgba(158, 230, 195, 0.42);
+  opacity: 0.72;
+  transform: translate3d(var(--gate-px), var(--gate-py), 0);
+  transition: color 0.35s ease, opacity 0.35s ease;
+}
+
+.gate-bracket--tl {
+  top: clamp(0.7rem, 2vw, 1.3rem);
+  left: clamp(0.7rem, 2vw, 1.3rem);
+}
+
+.gate-bracket--tr {
+  top: clamp(0.7rem, 2vw, 1.3rem);
+  right: clamp(0.7rem, 2vw, 1.3rem);
+  transform: translate3d(var(--gate-px-far), var(--gate-py), 0);
+}
+
+.gate-bracket--bl {
+  bottom: clamp(2.8rem, 6vh, 3.8rem);
+  left: clamp(0.7rem, 2vw, 1.3rem);
+  transform: translate3d(var(--gate-px), var(--gate-py-far), 0);
+}
+
+.gate-bracket--br {
+  bottom: clamp(2.8rem, 6vh, 3.8rem);
+  right: clamp(0.7rem, 2vw, 1.3rem);
+  transform: translate3d(var(--gate-px-far), var(--gate-py-far), 0);
+}
+
+.gate-bracket-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.gate-arc {
+  stroke: rgba(184, 244, 214, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 18 42;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  animation: gate-arc-flicker 7.5s ease-in-out infinite;
+}
+
+.gate-bracket--tr .gate-arc {
+  animation-delay: 1.8s;
+}
+
+.gate-bracket--bl .gate-arc {
+  animation-delay: 3.4s;
+}
+
+.gate-bracket--br .gate-arc {
+  animation-delay: 5.1s;
+}
+
+.gate-bracket-noise {
+  position: absolute;
+  inset: 18% 22%;
+  opacity: 0.18;
+  background:
+    linear-gradient(90deg, transparent 40%, rgba(31, 154, 98, 0.35) 50%, transparent 60%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(158, 230, 195, 0.08) 3px,
+      rgba(158, 230, 195, 0.08) 4px
+    );
+  mix-blend-mode: screen;
+  animation: gate-noise-shift 5.2s steps(3) infinite;
+}
+
+.gate-signal-rays {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(158, 230, 195, 0.08), transparent 18%),
+    linear-gradient(135deg, rgba(31, 154, 98, 0.18) 0%, transparent 18%, transparent 82%, rgba(31, 154, 98, 0.16) 100%),
+    linear-gradient(225deg, rgba(31, 154, 98, 0.16) 0%, transparent 18%, transparent 82%, rgba(31, 154, 98, 0.18) 100%);
+  transition: opacity 0.25s ease;
+}
+
+.gate-atmosphere.is-signal .gate-signal-rays {
+  opacity: 1;
+  animation: gate-signal-pulse 0.55s ease-out;
+}
+
+.gate-atmosphere.is-signal .gate-bracket {
+  color: rgba(184, 244, 214, 0.7);
+  opacity: 0.92;
+}
+
+.gate-atmosphere.is-locked .gate-bracket {
+  color: rgba(184, 244, 214, 0.88);
+  opacity: 1;
+  transform: none;
+}
+
+.gate-atmosphere.is-locked .gate-bracket-svg path:not(.gate-arc) {
+  stroke-dasharray: none;
+}
+
+.gate-atmosphere.is-locked .gate-arc {
+  opacity: 0.65;
+  animation: none;
+  stroke-dasharray: none;
+}
+
+.gate.is-locking .begin {
+  border-color: rgba(184, 244, 214, 0.55);
+  box-shadow:
+    inset 0 -1px 0 rgba(158, 230, 195, 0.95),
+    0 0 0 1px rgba(31, 154, 98, 0.35);
+}
+
+.gate-log {
+  position: absolute;
+  left: clamp(0.9rem, 3vw, 1.6rem);
+  right: clamp(6.5rem, 14vw, 9rem);
+  bottom: 0.85rem;
+  height: 1.35rem;
+  overflow: hidden;
+  opacity: 0.55;
+}
+
+.gate-log-scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 3px,
+    rgba(31, 154, 98, 0.06) 3px 4px
+  );
+  pointer-events: none;
+}
+
+.gate-log-line {
+  margin: 0;
+  color: rgba(143, 216, 180, 0.72);
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.gate-log-line.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+.gate-log-noise {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(7, 10, 8, 0.75));
+  pointer-events: none;
+}
+
+.gate-sfx {
+  position: absolute;
+  z-index: 3;
+  right: clamp(0.8rem, 2.5vw, 1.4rem);
+  bottom: 0.7rem;
+}
+
+.gate-sfx-toggle {
+  min-height: 32px;
+  padding: 0.35rem 0.65rem;
+  border-color: rgba(31, 154, 98, 0.35);
+  background: rgba(7, 10, 8, 0.72);
+  color: rgba(158, 230, 195, 0.78);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+}
+
+.gate-sfx-toggle:hover,
+.gate-sfx-toggle:focus-visible {
+  background: #0d1c15;
+  border-color: rgba(158, 230, 195, 0.65);
+  color: #e7fff4;
+}
+
+@keyframes gate-arc-flicker {
+  0%,
+  72%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+  76% {
+    opacity: 0.7;
+    stroke-dashoffset: -8;
+  }
+  82% {
+    opacity: 0.15;
+    stroke-dashoffset: -18;
+  }
+  88% {
+    opacity: 0.55;
+    stroke-dashoffset: -28;
+  }
+  94% {
+    opacity: 0;
+    stroke-dashoffset: -40;
+  }
+}
+
+@keyframes gate-noise-shift {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translateX(0);
+  }
+  33% {
+    opacity: 0.22;
+    transform: translateX(2px);
+  }
+  66% {
+    opacity: 0.08;
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes gate-signal-pulse {
+  from {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-arc,
+  .gate-bracket-noise,
+  .gate-atmosphere.is-signal .gate-signal-rays {
+    animation: none;
+  }
+
+  .gate-bracket,
+  .gate-atmosphere.is-locked .gate-bracket {
+    transform: none;
+  }
+
+  .gate-log-line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 .skip {

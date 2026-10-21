@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { attention, resetAttention } from './attention.ts'
 import { FallbackScene, FallbackWorld } from './FallbackScene.tsx'
 import { FinalLockup } from './FinalLockup.tsx'
+import { GateAtmosphere } from './GateAtmosphere.tsx'
+import { playGateThunder } from './gateThunder.ts'
 import { NoctisScene } from './NoctisScene.tsx'
 import { preferences, readSeen, reducedMotion, runtime, webglAvailable, writeSeen } from './runtime.ts'
 import type { Stage } from './runtime.ts'
@@ -37,6 +39,8 @@ export function Opening({ onContinue, continuing }: OpeningProps) {
   const [status, setStatus] = useState('')
   const [sceneFailed, setSceneFailed] = useState(false)
   const [mountScene, setMountScene] = useState(false)
+  const [gateSignal, setGateSignal] = useState(false)
+  const [gateLocked, setGateLocked] = useState(false)
 
   const finish = useCallback(() => {
     runtime.skip = true
@@ -130,14 +134,20 @@ export function Opening({ onContinue, continuing }: OpeningProps) {
 
   const begin = () => {
     if (runtime.stage !== 'gate') return
-    resetAttention()
-    if (worldRef.current) worldRef.current.style.opacity = '1'
     runtime.skip = false
     runtime.stage = 'run'
     runtime.startedAt = performance.now()
+    playGateThunder()
+    setGateLocked(true)
+    setGateSignal(false)
+    resetAttention()
+    if (worldRef.current) worldRef.current.style.opacity = '1'
     setReady(false)
     setStatus('Cinematic playing. Skip intro is available.')
-    setStage('run')
+    window.setTimeout(() => {
+      setStage('run')
+      setGateLocked(false)
+    }, 260)
   }
 
   const lockup = (
@@ -190,14 +200,19 @@ export function Opening({ onContinue, continuing }: OpeningProps) {
         </button>
       ) : null}
       {lockup}
-      {stage === 'gate' ? (
-        <div className="gate">
+      {stage === 'gate' || gateLocked ? (
+        <div className={gateLocked ? 'gate is-locking' : 'gate'}>
+          <GateAtmosphere locked={gateLocked} signal={gateSignal} />
           <p className="gate-note">Sealed transmission</p>
           <button
             type="button"
             className="begin"
             ref={beginRef}
             onClick={begin}
+            onPointerEnter={() => setGateSignal(true)}
+            onPointerLeave={() => setGateSignal(false)}
+            onFocus={() => setGateSignal(true)}
+            onBlur={() => setGateSignal(false)}
             aria-label="Begin the opening cinematic"
           >
             <span className="begin-kicker">ENTER</span>
