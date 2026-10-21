@@ -166,8 +166,10 @@ a.cta:hover {
   min-height: 22rem;
   overflow: hidden;
   background: #070a08;
+  isolation: isolate;
 }
 
+.hero-vista,
 .hero-stage canvas,
 .hero-fallback {
   position: absolute;
@@ -175,6 +177,30 @@ a.cta:hover {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.hero-vista {
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 5%, #000 90%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 5%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+
+.hero-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #070a08 0%, rgba(7, 10, 8, 0.85) 5%, rgba(7, 10, 8, 0.28) 14%, transparent 26%),
+    linear-gradient(270deg, rgba(7, 10, 8, 0.55) 0%, transparent 20%),
+    linear-gradient(180deg, transparent 55%, rgba(7, 10, 8, 0.5) 80%, #070a08 100%),
+    radial-gradient(ellipse at 76% 48%, transparent 32%, rgba(7, 10, 8, 0.7) 100%);
 }
 
 .band {
@@ -185,7 +211,9 @@ a.cta:hover {
 
 .band-head h2,
 .band h2,
-.sector-detail h3,
+.brief-head h3,
+.sector-briefing-head h3,
+.route-card h3,
 .protocol h3 {
   margin: 0;
   font-family: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
@@ -241,101 +269,741 @@ a.cta:hover {
   list-style: none;
 }
 
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 1.5rem 2.5rem;
-  margin-top: 1rem;
-}
-
-.split p,
 .protocol p,
-.sector-detail p,
-.arena p {
+.arena p,
+.brief-row-body,
+.sector-briefing-summary,
+.sector-range-note {
   margin: 0;
   max-width: 42rem;
   color: #d5e6dc;
   line-height: 1.6;
 }
 
-.split ul {
-  margin: 0;
-  padding-left: 1.1rem;
-  color: #d5e6dc;
-  line-height: 1.7;
+/* —— Mission briefing —— */
+.mission-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
 
-.sector-board {
+.mission-terrain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.09;
+  background:
+    linear-gradient(rgba(31, 154, 98, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 154, 98, 0.1) 1px, transparent 1px),
+    radial-gradient(ellipse at 18% 72%, rgba(16, 72, 48, 0.55), transparent 42%),
+    radial-gradient(ellipse at 82% 28%, rgba(12, 48, 34, 0.4), transparent 46%);
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+}
+
+.mission-terrain::before {
+  content: "";
+  position: absolute;
+  inset: 12% 8% auto;
+  height: 42%;
+  background:
+    linear-gradient(135deg, transparent 42%, rgba(31, 154, 98, 0.18) 42.5%, transparent 43%),
+    linear-gradient(210deg, transparent 58%, rgba(158, 230, 195, 0.12) 58.5%, transparent 59%);
+  clip-path: polygon(0 70%, 12% 48%, 22% 62%, 38% 28%, 54% 54%, 68% 18%, 84% 46%, 100% 34%, 100% 100%, 0 100%);
+  opacity: 0.55;
+}
+
+.mission-band > .band-head,
+.mission-band > .mission-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.mission-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.8fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+  gap: 1rem 1.25rem;
+  margin-top: 1.35rem;
+  perspective: 900px;
+}
+
+.brief-block {
+  position: relative;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border: 1px solid rgba(31, 154, 98, 0.32);
+  background: rgba(7, 12, 10, 0.55);
+  opacity: 0;
+  transform: translate3d(0, 28px, -48px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 0.84, 0.22, 1),
+    transform 0.75s cubic-bezier(0.16, 0.84, 0.22, 1);
+}
+
+.brief-block--field {
+  transition-delay: 0.12s;
+}
+
+.mission-band.is-in .brief-block {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.brief-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #1f9a62 35%, #9ee6c3 50%, #1f9a62 65%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mission-band.is-in .brief-scan {
+  animation: brief-scan 1.05s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both;
+}
+
+.brief-block--field .brief-scan {
+  animation-delay: 0.28s;
+}
+
+.brief-head {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.sector-label {
+  margin: 0;
+  color: #8fd8b4;
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.brief-head h3 {
+  font-size: clamp(1.45rem, 2.6vw, 1.95rem);
+  line-height: 1;
+}
+
+.brief-divider {
+  height: 1px;
+  margin: 0.9rem 0 1rem;
+  background: linear-gradient(90deg, rgba(31, 154, 98, 0.75), rgba(31, 154, 98, 0.12));
+}
+
+.brief-rows {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.brief-rows li {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.brief-marker {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid rgba(31, 154, 98, 0.55);
+  color: #9ee6c3;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+.brief-row-title {
+  margin: 0;
+  color: #f4f7f5;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.brief-row-body {
+  margin-top: 0.28rem;
+  font-size: 0.95rem;
+}
+
+.brief-rows--compact li {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(31, 154, 98, 0.18);
+}
+
+.brief-rows--compact li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.brief-data {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr);
+  gap: 0.55rem 0.85rem;
+  align-items: baseline;
+}
+
+.brief-rows--compact .brief-row-body {
+  margin-top: 0;
+}
+
+/* —— Sector range —— */
+.sectors-band {
+  position: relative;
+}
+
+.sector-range {
   margin-top: 1.2rem;
+}
+
+.sector-range-note {
+  margin-bottom: 0.9rem;
+  color: #8fd8b4;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
 }
 
 .sector-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.5rem;
   align-content: flex-start;
 }
 
-.sector-list button {
-  min-height: 40px;
-  padding: 0.45rem 0.75rem;
-  letter-spacing: 0.08em;
-  font-size: 0.72rem;
+.sector-tag {
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  padding: 0.5rem 0.85rem;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  background: rgba(7, 10, 8, 0.9);
+  border-color: rgba(31, 154, 98, 0.42);
 }
 
-.sector-list button.is-on {
-  background: #10241a;
+.sector-tag:hover,
+.sector-tag:focus-visible {
+  background: #0d1c15;
   border-color: #9ee6c3;
 }
 
-.sector-detail {
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(31, 154, 98, 0.35);
+.sector-tag.is-active {
+  border-color: #9ee6c3;
+  color: #e7fff4;
 }
 
-.sector-detail h3 {
-  font-size: 1.8rem;
+.sector-tag-scan {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: #9ee6c3;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.sector-detail p:last-child {
-  margin-top: 0.6rem;
+.sector-tag.is-scanning .sector-tag-scan {
+  animation: tag-scan 0.4s ease-out both;
 }
 
-.protocol {
+.sector-tag-label {
+  position: relative;
+  z-index: 1;
+}
+
+.sector-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-top: 1.2rem;
+  place-items: center;
+  perspective: 1400px;
 }
 
-.protocol article {
-  padding: 1rem;
+.sector-portal-backdrop,
+.sector-portal-backdrop:hover,
+.sector-portal-backdrop:focus,
+.sector-portal-backdrop:focus-visible,
+.sector-portal-backdrop:active {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  letter-spacing: normal;
+  text-transform: none;
+  color: transparent;
+  /* Lock tint across all button states — global button:hover must not repaint this */
+  background: rgba(5, 10, 8, 0.62);
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+
+.sector-portal.is-live .sector-portal-backdrop,
+.sector-portal.is-live .sector-portal-backdrop:hover,
+.sector-portal.is-live .sector-portal-backdrop:focus,
+.sector-portal.is-live .sector-portal-backdrop:focus-visible,
+.sector-portal.is-live .sector-portal-backdrop:active {
+  opacity: 1;
+  background: rgba(5, 10, 8, 0.62);
+}
+
+.sector-portal.is-exit .sector-portal-backdrop,
+.sector-portal.is-exit .sector-portal-backdrop:hover,
+.sector-portal.is-exit .sector-portal-backdrop:focus,
+.sector-portal.is-exit .sector-portal-backdrop:focus-visible,
+.sector-portal.is-exit .sector-portal-backdrop:active {
+  opacity: 0;
+  background: rgba(5, 10, 8, 0.62);
+  transition-duration: 0.3s;
+}
+
+.sector-portal-stage {
+  position: relative;
+  z-index: 1;
+  width: min(40rem, calc(100vw - 2rem));
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.sector-briefing {
+  pointer-events: auto;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.sector-briefing-frame {
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.25rem 1.3rem 1.35rem;
+  border: 1px solid rgba(31, 154, 98, 0.5);
+  background:
+    linear-gradient(180deg, rgba(10, 18, 14, 0.97), rgba(7, 10, 8, 0.98));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sector-briefing:hover .sector-briefing-frame {
+    border-color: rgba(158, 230, 195, 0.62);
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+  }
+}
+
+.sector-briefing-head {
+  display: grid;
+  gap: 0.4rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(31, 154, 98, 0.28);
+}
+
+.sector-num {
+  margin: 0;
+  color: #9ee6c3;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sector-briefing-head h3 {
+  font-size: clamp(1.8rem, 3.4vw, 2.45rem);
+  line-height: 0.95;
+}
+
+.sector-briefing-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(7rem, 0.55fr);
+  gap: 1rem 1.2rem;
+  align-items: start;
+}
+
+.sector-briefing-summary {
+  color: #e7fff4;
+  font-size: 1rem;
+}
+
+.sector-briefing-skills {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(31, 154, 98, 0.22);
+}
+
+.sector-briefing-skills ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: #d5e6dc;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.sector-briefing-skills li {
+  display: grid;
+  grid-template-columns: 0.7rem 1fr;
+  gap: 0.55rem;
+  align-items: baseline;
+}
+
+.sector-briefing-skills li::before {
+  content: "";
+  width: 0.35rem;
+  height: 0.35rem;
+  margin-top: 0.35rem;
+  background: #1f9a62;
+}
+
+.sector-briefing-viz {
+  display: grid;
+  place-items: center;
+  min-height: 8.5rem;
+  padding: 0.6rem;
   border: 1px solid rgba(31, 154, 98, 0.28);
+  color: #8fd8b4;
+  background:
+    linear-gradient(135deg, rgba(16, 36, 26, 0.35), transparent 55%),
+    rgba(7, 10, 8, 0.65);
 }
 
-.protocol h3 {
-  margin-bottom: 0.45rem;
-  font-size: 1.45rem;
+.sector-viz {
+  width: min(7.5rem, 100%);
+  height: auto;
 }
 
-.dates {
+.sector-viz-bits {
+  fill: currentColor;
+  stroke: none;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  font-family: Outfit, "Segoe UI", sans-serif;
+}
+
+.sector-return {
+  justify-self: start;
+  min-height: 44px;
+  margin-top: 0.15rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  border-color: rgba(184, 244, 214, 0.65);
+  background: transparent;
+}
+
+.sector-return:hover,
+.sector-return:focus-visible {
+  background: #10241a;
+  border-color: #e7fff4;
+}
+
+/* —— Operation route (Protocol) —— */
+.route-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.route-terrain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background:
+    linear-gradient(rgba(31, 154, 98, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 154, 98, 0.09) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 20%, rgba(14, 48, 34, 0.5), transparent 48%);
+  background-size: 32px 32px, 32px 32px, auto;
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.route-band > .band-head,
+.route-band > .route-track,
+.route-band > .route-rules,
+.route-band > .route-dates {
+  position: relative;
+  z-index: 1;
+}
+
+.route-track {
+  position: relative;
+  margin-top: 1.6rem;
+  padding: 0.4rem 0 0.6rem;
+  perspective: 1100px;
+}
+
+.route-spine {
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.route-spine-base {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 154, 98, 0.22);
+}
+
+.route-spine-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(31, 154, 98, 0.35), rgba(158, 230, 195, 0.72));
+  transition: height 0.12s linear;
+}
+
+.route-signal {
+  position: absolute;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 1px solid rgba(158, 230, 195, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(14, 28, 22, 0.95) 42%, rgba(31, 154, 98, 0.35) 70%, transparent 72%);
+  box-shadow: 0 0 0 1px rgba(7, 10, 8, 0.7);
+  transition: top 0.12s linear;
+}
+
+.route-signal.is-pulse {
+  animation: route-node-pulse 0.5s ease-out;
+}
+
+.route-list {
+  display: grid;
+  gap: 1.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: center;
+  --route-tilt-x: 0deg;
+  --route-tilt-y: 0deg;
+  --route-lift: 0px;
+}
+
+.route-stop--left .route-card {
+  grid-column: 1;
+  justify-self: end;
+  max-width: 28rem;
+  width: 100%;
+  transform-origin: right center;
+}
+
+.route-stop--right .route-card {
+  grid-column: 2;
+  justify-self: start;
+  max-width: 28rem;
+  width: 100%;
+  transform-origin: left center;
+}
+
+.route-dot {
+  position: absolute;
+  top: 1.35rem;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border: 1px solid rgba(31, 154, 98, 0.45);
+  border-radius: 50%;
+  background: #070a08;
+  z-index: 2;
+  transition: border-color 0.35s ease, background 0.35s ease;
+}
+
+.route-stop.is-reached .route-dot {
+  border-color: #9ee6c3;
+  background: #1f9a62;
+}
+
+.route-stop.is-pulse .route-dot {
+  animation: route-node-pulse 0.5s ease-out;
+}
+
+.route-card {
+  position: relative;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border: 1px solid rgba(31, 154, 98, 0.34);
+  background: rgba(7, 12, 10, 0.72);
+  opacity: 0;
+  transform:
+    translate3d(0, 32px, -20px)
+    rotateY(var(--route-recess-y, 0deg));
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    transform 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  will-change: transform, opacity;
+}
+
+.route-stop--left {
+  --route-recess-y: 3deg;
+}
+
+.route-stop--right {
+  --route-recess-y: -3deg;
+}
+
+.route-stop.is-in .route-card {
+  opacity: 1;
+  --route-recess-y: 0deg;
+  transform:
+    translate3d(0, var(--route-lift), 0)
+    rotateX(var(--route-tilt-x))
+    rotateY(var(--route-tilt-y));
+}
+
+.route-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .route-stop.is-in .route-card:hover {
+    border-color: rgba(158, 230, 195, 0.55);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  }
+
+  .route-card[data-edge="left"]::before {
+    opacity: 1;
+    background: linear-gradient(90deg, rgba(184, 244, 214, 0.55) 0%, rgba(31, 154, 98, 0.18) 8%, transparent 18%);
+  }
+
+  .route-card[data-edge="right"]::before {
+    opacity: 1;
+    background: linear-gradient(270deg, rgba(184, 244, 214, 0.55) 0%, rgba(31, 154, 98, 0.18) 8%, transparent 18%);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .route-card:active {
+    border-color: rgba(158, 230, 195, 0.5);
+    transform: translate3d(0, 1px, 0);
+  }
+}
+
+.route-card-head {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease 0.42s, transform 0.35s ease 0.42s;
+}
+
+.route-card-head.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.route-code {
+  margin: 0 0 0.4rem;
+  color: #8fd8b4;
+  font-size: 0.64rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.route-card h3 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+  line-height: 1;
+}
+
+.route-card-body {
+  margin: 0;
+  min-height: 3.6em;
+  color: #d5e6dc;
+  line-height: 1.6;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.route-card-body.is-shown {
+  opacity: 1;
+}
+
+.route-caret {
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.1em;
+  vertical-align: text-bottom;
+  background: rgba(158, 230, 195, 0.7);
+  animation: route-caret 0.8s steps(1) infinite;
+}
+
+.route-rules {
+  margin-top: 1.8rem;
+}
+
+.dates,
+.route-dates {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
   margin: 1rem 0 0;
 }
 
-.dates div {
+.dates div,
+.route-dates div {
   padding-top: 0.65rem;
   border-top: 1px solid rgba(31, 154, 98, 0.35);
 }
 
-.dates dd {
+.dates dd,
+.route-dates dd {
   margin: 0.3rem 0 0;
   color: #f4f7f5;
+}
+
+@keyframes route-node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(158, 230, 195, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(158, 230, 195, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(158, 230, 195, 0);
+  }
+}
+
+@keyframes route-caret {
+  50% {
+    opacity: 0;
+  }
 }
 
 .partner-grid {
@@ -367,6 +1035,36 @@ a.cta:hover {
   padding-bottom: 5rem;
 }
 
+@keyframes brief-scan {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  to {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes tag-scan {
+  from {
+    left: 0;
+    opacity: 0.95;
+    box-shadow: 0 0 0 rgba(158, 230, 195, 0);
+  }
+  35% {
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(158, 230, 195, 0.25);
+  }
+  to {
+    left: calc(100% - 2px);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 860px) {
   .mast {
     align-items: flex-start;
@@ -374,12 +1072,13 @@ a.cta:hover {
   }
 
   .hero,
-  .split,
-  .sector-board,
-  .protocol,
+  .mission-grid,
   .dates,
+  .route-dates,
   .partner-grid,
-  .count {
+  .count,
+  .sector-briefing-body,
+  .brief-data {
     grid-template-columns: 1fr;
   }
 
@@ -390,11 +1089,78 @@ a.cta:hover {
   .hero-stage {
     height: 24rem;
   }
+
+  .route-spine {
+    left: 0.55rem;
+    transform: none;
+  }
+
+  .route-stop {
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    gap: 0.85rem;
+  }
+
+  .route-stop--left .route-card,
+  .route-stop--right .route-card {
+    grid-column: 2;
+    justify-self: stretch;
+    max-width: none;
+    transform-origin: left center;
+  }
+
+  .route-dot {
+    left: 0.55rem;
+    margin-left: -4px;
+  }
+
+  .route-signal {
+    left: 0.55rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .sector-portal-stage {
+    width: calc(100vw - 1.25rem);
+  }
+
+  .sector-briefing-frame {
+    padding: 1.1rem 1rem 1.15rem;
+  }
+
+  .sector-briefing-viz {
+    min-height: 6.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .scan,
-  .command.is-leaving {
+  .command.is-leaving,
+  .brief-scan,
+  .sector-tag.is-scanning .sector-tag-scan,
+  .route-signal.is-pulse,
+  .route-stop.is-pulse .route-dot,
+  .route-caret {
     animation: none;
+  }
+
+  .brief-block,
+  .mission-band.is-in .brief-block,
+  .route-card,
+  .route-stop.is-in .route-card,
+  .route-card-head,
+  .route-card-body {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .route-spine-progress,
+  .route-signal {
+    transition: none;
+  }
+
+  .sector-portal-backdrop,
+  .sector-briefing {
+    transition: none !important;
   }
 }
