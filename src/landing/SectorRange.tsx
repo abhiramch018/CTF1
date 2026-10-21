@@ -190,13 +190,19 @@ export function SectorRange() {
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (phase !== 'open') return
-    if (window.matchMedia('(max-width: 720px), (prefers-reduced-motion: reduce)').matches) return
+    if (
+      window.matchMedia(
+        '(max-width: 720px), (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse)',
+      ).matches
+    ) {
+      return
+    }
     const node = cardRef.current
     if (!node) return
     const rect = node.getBoundingClientRect()
     const px = (event.clientX - rect.left) / rect.width - 0.5
     const py = (event.clientY - rect.top) / rect.height - 0.5
-    setTilt({ x: py * -5, y: px * 6 })
+    setTilt({ x: py * -5, y: px * 5 }) // max ~2.5deg at card edges
   }
 
   const onPointerLeave = () => {
@@ -263,10 +269,10 @@ export function SectorRange() {
           }
           role="presentation"
         >
-          <button
-            type="button"
+          <div
             className="sector-portal-backdrop"
-            aria-label="Close sector briefing"
+            role="presentation"
+            aria-hidden="true"
             onClick={closeSector}
           />
           <div className="sector-portal-stage" aria-hidden={false}>
