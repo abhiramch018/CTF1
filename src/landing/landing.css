@@ -2,10 +2,15 @@ body.is-site {
   overflow: auto;
 }
 
+body.is-site.dn-modal-open {
+  overflow: hidden !important;
+}
+
 .site {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  overflow-x: clip;
   background: #070a08;
   color: #e7fff4;
 }
@@ -66,12 +71,25 @@ body.is-site {
   grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
   gap: clamp(1rem, 3vw, 2.5rem);
   align-items: center;
-  min-height: calc(100vh - 4.25rem);
+  /* ~110vh travel for scroll-driven approach without locking scroll */
+  min-height: max(calc(100vh - 4.25rem), 110vh);
   padding: clamp(1.5rem, 5vh, 3.5rem) clamp(1.1rem, 4vw, 3rem) clamp(2rem, 6vh, 4rem);
 }
 
 .hero-copy {
   max-width: 38rem;
+  --hero-fade: 0;
+  opacity: calc(1 - var(--hero-fade) * 0.55);
+  transform: translate3d(0, calc(var(--hero-fade) * -14px), 0);
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy {
+    --hero-fade: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .eyebrow {
@@ -204,9 +222,100 @@ a.cta:hover {
 }
 
 .band {
+  position: relative;
+  isolation: isolate;
   scroll-margin-top: 5rem;
   padding: clamp(2.5rem, 7vh, 4.5rem) clamp(1.1rem, 4vw, 3rem);
   border-top: 1px solid rgba(31, 154, 98, 0.22);
+}
+
+/* —— Scroll reveal (one-shot) —— */
+.reveal-section > .band-head,
+.reveal-section > .reveal-body,
+.reveal-section > .count,
+.reveal-section > .fact-row,
+.reveal-section > .partner-grid,
+.reveal-section > .sector-range,
+.reveal-section > .mission-grid,
+.reveal-section > .route-rules,
+.reveal-section > .route-dates,
+.reveal-section > .route-track {
+  position: relative;
+  z-index: 1;
+}
+
+.reveal-item {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0) rotateX(1.5deg);
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    transform 0.55s cubic-bezier(0.16, 0.84, 0.22, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  transform-style: preserve-3d;
+}
+
+.reveal-section.is-shown .reveal-item {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotateX(0deg);
+}
+
+/* Background depth layers — always behind content */
+.band-depth {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  --band-depth: 0;
+  --band-scan: 0;
+}
+
+.band-depth-layer {
+  position: absolute;
+  inset: 8% 4% auto;
+  height: 55%;
+  opacity: calc(0.04 + var(--band-depth) * 0.1);
+  transform: translate3d(0, calc(var(--band-depth) * -18px), 0);
+  background:
+    linear-gradient(135deg, transparent 40%, rgba(31, 154, 98, 0.16) 41%, transparent 42%),
+    linear-gradient(200deg, transparent 55%, rgba(158, 230, 195, 0.08) 56%, transparent 57%);
+  clip-path: polygon(0 78%, 10% 52%, 24% 68%, 40% 30%, 58% 58%, 72% 22%, 88% 48%, 100% 36%, 100% 100%, 0 100%);
+}
+
+.band-depth-layer--b {
+  inset: auto 6% 6%;
+  height: 40%;
+  opacity: calc(0.03 + var(--band-depth) * 0.08);
+  transform: translate3d(calc(var(--band-depth) * 12px), 0, 0);
+  clip-path: polygon(0 40%, 18% 0, 42% 28%, 60% 8%, 82% 34%, 100% 12%, 100% 100%, 0 100%);
+}
+
+.band-depth-scan {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 20%;
+  height: 1px;
+  max-width: 84%;
+  background: linear-gradient(90deg, transparent, rgba(31, 154, 98, 0.55), rgba(158, 230, 195, 0.7), rgba(31, 154, 98, 0.55), transparent);
+  opacity: 0;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.4s ease;
+}
+
+.reveal-section.is-shown .band-depth-scan,
+.mission-band.is-in .band-depth-scan {
+  opacity: calc(var(--band-scan) * 0.75);
+  animation: band-depth-scan 2.4s ease-in-out 1;
+}
+
+@keyframes band-depth-scan {
+  from {
+    transform: translate3d(-8%, 0, 0);
+  }
+  to {
+    transform: translate3d(8%, 0, 0);
+  }
 }
 
 .band-head h2,
@@ -334,19 +443,20 @@ a.cta:hover {
   border: 1px solid rgba(31, 154, 98, 0.32);
   background: rgba(7, 12, 10, 0.55);
   opacity: 0;
-  transform: translate3d(0, 28px, -48px);
+  transform: translate3d(0, 20px, 0) rotateX(1.5deg);
   transition:
-    opacity 0.7s cubic-bezier(0.16, 0.84, 0.22, 1),
-    transform 0.75s cubic-bezier(0.16, 0.84, 0.22, 1);
+    opacity 0.55s cubic-bezier(0.16, 0.84, 0.22, 1),
+    transform 0.55s cubic-bezier(0.16, 0.84, 0.22, 1);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
 .brief-block--field {
-  transition-delay: 0.12s;
+  --reveal-delay: 100ms;
 }
 
 .mission-band.is-in .brief-block {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0) rotateX(0deg);
 }
 
 .brief-scan {
@@ -516,13 +626,25 @@ a.cta:hover {
   z-index: 1;
 }
 
+/* True modal layer — portaled to document.body, above all section stacking contexts */
+html.dn-modal-open,
+html.dn-modal-open body,
+body.dn-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 .sector-portal {
   position: fixed;
   inset: 0;
-  z-index: 40;
-  display: grid;
-  place-items: center;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   perspective: 1400px;
+  pointer-events: auto;
 }
 
 .sector-portal-backdrop,
@@ -541,15 +663,17 @@ a.cta:hover {
   letter-spacing: normal;
   text-transform: none;
   color: transparent;
-  /* Lock tint across all button states — global button:hover must not repaint this */
-  background: rgba(5, 10, 8, 0.62);
+  /* Near-black translucent veil — not a solid green wash */
+  background:
+    radial-gradient(ellipse at center, rgba(6, 10, 8, 0.72) 0%, rgba(3, 5, 4, 0.92) 70%),
+    rgba(3, 5, 4, 0.88);
   box-shadow: none;
   outline: none;
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.35s ease;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(16px) saturate(0.55) brightness(0.55);
+  backdrop-filter: blur(16px) saturate(0.55) brightness(0.55);
   pointer-events: auto;
 }
 
@@ -559,7 +683,9 @@ a.cta:hover {
 .sector-portal.is-live .sector-portal-backdrop:focus-visible,
 .sector-portal.is-live .sector-portal-backdrop:active {
   opacity: 1;
-  background: rgba(5, 10, 8, 0.62);
+  background:
+    radial-gradient(ellipse at center, rgba(6, 10, 8, 0.72) 0%, rgba(3, 5, 4, 0.92) 70%),
+    rgba(3, 5, 4, 0.88);
 }
 
 .sector-portal.is-exit .sector-portal-backdrop,
@@ -568,32 +694,40 @@ a.cta:hover {
 .sector-portal.is-exit .sector-portal-backdrop:focus-visible,
 .sector-portal.is-exit .sector-portal-backdrop:active {
   opacity: 0;
-  background: rgba(5, 10, 8, 0.62);
+  background:
+    radial-gradient(ellipse at center, rgba(6, 10, 8, 0.72) 0%, rgba(3, 5, 4, 0.92) 70%),
+    rgba(3, 5, 4, 0.88);
   transition-duration: 0.3s;
 }
 
 .sector-portal-stage {
   position: relative;
   z-index: 1;
-  width: min(40rem, calc(100vw - 2rem));
+  width: min(700px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
   transform-style: preserve-3d;
   pointer-events: none;
 }
 
 .sector-briefing {
   pointer-events: auto;
+  width: 100%;
+  max-height: calc(100vh - 48px);
   transform-style: preserve-3d;
   will-change: transform, opacity;
 }
 
 .sector-briefing-frame {
   display: grid;
-  gap: 1.1rem;
-  padding: 1.25rem 1.3rem 1.35rem;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  width: 100%;
+  max-height: calc(100vh - 48px);
+  padding: 1.25rem 1.35rem 1.4rem;
   border: 1px solid rgba(31, 154, 98, 0.5);
   background:
-    linear-gradient(180deg, rgba(10, 18, 14, 0.97), rgba(7, 10, 8, 0.98));
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+    linear-gradient(180deg, rgba(10, 18, 14, 0.98), rgba(7, 10, 8, 0.99));
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.55);
   transition:
     border-color 0.25s ease,
     box-shadow 0.25s ease;
@@ -602,7 +736,7 @@ a.cta:hover {
 @media (hover: hover) and (pointer: fine) {
   .sector-briefing:hover .sector-briefing-frame {
     border-color: rgba(158, 230, 195, 0.62);
-    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.42);
+    box-shadow: 0 26px 68px rgba(0, 0, 0, 0.58);
   }
 }
 
@@ -611,6 +745,7 @@ a.cta:hover {
   gap: 0.4rem;
   padding-bottom: 0.85rem;
   border-bottom: 1px solid rgba(31, 154, 98, 0.28);
+  flex-shrink: 0;
 }
 
 .sector-num {
@@ -624,6 +759,15 @@ a.cta:hover {
 .sector-briefing-head h3 {
   font-size: clamp(1.8rem, 3.4vw, 2.45rem);
   line-height: 0.95;
+}
+
+.sector-briefing-scroll {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 0.15rem;
 }
 
 .sector-briefing-body {
@@ -697,8 +841,10 @@ a.cta:hover {
 
 .sector-return {
   justify-self: start;
+  align-self: end;
+  flex-shrink: 0;
   min-height: 44px;
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
   padding: 0.7rem 1rem;
   font-size: 0.7rem;
   letter-spacing: 0.2em;
@@ -1362,9 +1508,20 @@ a.final-cta:focus-visible {
   .arena-signal,
   .arena-copy,
   .final-cta,
-  .final-unlock::before {
-    transition: none;
-    animation: none;
+  .final-unlock::before,
+  .reveal-item,
+  .brief-block,
+  .band-depth-scan,
+  .hero-copy {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .reveal-item,
+  .brief-block {
+    opacity: 1;
   }
 }
 
@@ -1452,12 +1609,19 @@ a.final-cta:focus-visible {
 }
 
 @media (max-width: 720px) {
-  .sector-portal-stage {
-    width: calc(100vw - 1.25rem);
+  .sector-portal {
+    padding: 16px;
+  }
+
+  .sector-portal-stage,
+  .sector-briefing,
+  .sector-briefing-frame {
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
   }
 
   .sector-briefing-frame {
-    padding: 1.1rem 1rem 1.15rem;
+    padding: 1.1rem 1rem 1.2rem;
   }
 
   .sector-briefing-viz {
