@@ -92,6 +92,13 @@ button:active {
     radial-gradient(ellipse at 62% 48%, transparent 36%, rgba(5, 8, 7, 0.55) 100%);
 }
 
+/* Opening cinematic: keep letterbox mood without hiding the 3D forms. */
+.vignette--entrance {
+  background:
+    linear-gradient(90deg, rgba(7, 10, 8, 0.28) 0%, rgba(7, 10, 8, 0.04) 38%, rgba(7, 10, 8, 0) 62%),
+    radial-gradient(ellipse at 58% 46%, transparent 52%, rgba(5, 8, 7, 0.22) 100%);
+}
+
 .veil {
   position: absolute;
   inset: 0;

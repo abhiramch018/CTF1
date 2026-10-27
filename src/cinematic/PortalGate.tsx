@@ -86,12 +86,15 @@ export function PortalGate({
   pose,
   leafTravel = 0.62,
   wideEnergy = false,
+  entrance = false,
 }: {
   pose: RefObject<Pose>
   /** Horizontal door-leaf travel multiplier (hero uses a wider unlock). */
   leafTravel?: number
   /** Widen the energy aperture with portal power (hero Breach Wake). */
   wideEnergy?: boolean
+  /** Opening cinematic: wider local seam spill + post-crossing dim. */
+  entrance?: boolean
 }) {
   const leftLeaf = useRef<THREE.Group>(null)
   const rightLeaf = useRef<THREE.Group>(null)
@@ -103,6 +106,12 @@ export function PortalGate({
   const beamHalo = useRef<THREE.MeshBasicMaterial>(null)
   const beam = useRef<THREE.Group>(null)
   const glow = useRef<THREE.PointLight>(null)
+  const frameSpill = useRef<THREE.PointLight>(null)
+  const mistMat = useRef<THREE.MeshBasicMaterial>(null)
+  const rippleMat = useRef<THREE.MeshBasicMaterial>(null)
+  const rippleMesh = useRef<THREE.Mesh>(null)
+  const embers = useRef<THREE.Points>(null)
+  const emberSeeds = useRef<Float32Array | null>(null)
 
   const energy = useMemo(
     () =>
@@ -161,18 +170,63 @@ export function PortalGate({
       }),
     [],
   )
+  const engraving = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#0e1814',
+        emissive: '#1a6b48',
+        emissiveIntensity: 0.22,
+        roughness: 0.55,
+        metalness: 0.25,
+        flatShading: true,
+      }),
+    [],
+  )
+  const emberCloud = useMemo(() => {
+    if (!entrance) return null
+    const count = 14
+    const positions = new Float32Array(count * 3)
+    const seeds = new Float32Array(count)
+    for (let i = 0; i < count; i += 1) {
+      positions[i * 3] = (i % 2 === 0 ? -0.04 : 0.04) + (Math.sin(i * 12.1) * 0.5 + 0.5) * 0.06
+      positions[i * 3 + 1] = 0.4 + (i / count) * 3.2
+      positions[i * 3 + 2] = 0
+      seeds[i] = Math.sin(i * 47.2) * 0.5 + 0.5
+    }
+    emberSeeds.current = seeds
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    const material = new THREE.PointsMaterial({
+      color: '#3dba7e',
+      size: 0.03,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+      sizeAttenuation: true,
+    })
+    return {
+      points: new THREE.Points(geometry, material),
+      count,
+      dispose: () => {
+        geometry.dispose()
+        material.dispose()
+      },
+    }
+  }, [entrance])
 
   useEffect(() => {
     return () => {
       energy.dispose()
       stone.dispose()
       stoneDark.dispose()
+      engraving.dispose()
+      emberCloud?.dispose()
       glyphMaterials.forEach((material) => {
         material.map?.dispose()
         material.dispose()
       })
     }
-  }, [energy, glyphMaterials, stone, stoneDark])
+  }, [emberCloud, energy, engraving, glyphMaterials, stone, stoneDark])
 
   useFrame(({ clock }) => {
     const current = pose.current
@@ -185,7 +239,9 @@ export function PortalGate({
     if (rightLeaf.current) rightLeaf.current.position.x = GATE.x + 0.46 + current.portal * leafTravel
     if (seamMat.current) {
       // Thin dormant seam → fades as the aperture becomes a real opening
-      seamMat.current.emissiveIntensity = 0.05 + current.portal * (wideEnergy ? 0.35 : 1.2)
+      const seamIdle = entrance ? 0.28 : 0.05
+      const seamGain = wideEnergy ? 0.35 : entrance ? 0.85 : 1.2
+      seamMat.current.emissiveIntensity = seamIdle + current.portal * seamGain
       seamMat.current.opacity = wideEnergy ? Math.max(0, 0.9 - current.portal * 1.35) : 1
       seamMat.current.transparent = wideEnergy
     }
@@ -203,7 +259,54 @@ export function PortalGate({
     if (beam.current) beam.current.visible = current.beam > 0.03
     if (beamCore.current) beamCore.current.opacity = current.beam * 0.16
     if (beamHalo.current) beamHalo.current.opacity = current.beam * 0.04
-    if (glow.current) glow.current.intensity = current.portal * (wideEnergy ? 3.6 : 2.8)
+    if (glow.current) {
+      const peak = wideEnergy ? 3.6 : entrance ? 2.2 : 2.8
+      const hold = entrance ? 0.35 + current.portal * peak * (1 - current.interior * 0.55) : current.portal * peak
+      glow.current.intensity = hold
+      if (entrance) glow.current.distance = 6.2
+    }
+    if (frameSpill.current) {
+      frameSpill.current.intensity = entrance
+        ? 0.45 + current.portal * 0.55 * (1 - current.interior * 0.4)
+        : 0
+    }
+
+    if (entrance) {
+      const t = clock.elapsedTime
+      if (mistMat.current) {
+        mistMat.current.opacity = preferences.reduce
+          ? 0.1
+          : 0.08 + Math.sin(t * 0.55) * 0.03 + current.portal * 0.06
+      }
+      if (rippleMat.current) {
+        if (preferences.reduce) {
+          rippleMat.current.opacity = 0.04
+        } else {
+          const period = 4.6
+          const local = t % period
+          const active = local < 1.15
+          const u = active ? local / 1.15 : 0
+          rippleMat.current.opacity = active ? Math.sin(u * Math.PI) * 0.22 : 0
+          if (rippleMesh.current) rippleMesh.current.scale.set(1 + u * 2.4, 1 + u * 1.6, 1)
+        }
+      }
+      if (embers.current && emberCloud && !preferences.reduce) {
+        const pos = embers.current.geometry.getAttribute('position') as THREE.BufferAttribute
+        const seeds = emberSeeds.current
+        for (let i = 0; i < emberCloud.count; i += 1) {
+          const seed = seeds?.[i] ?? 0.5
+          let y = pos.getY(i) + 0.008 + seed * 0.01
+          let x = Math.sin(t * 0.8 + seed * 8) * (0.05 + seed * 0.08)
+          let z = 0.05 + seed * 0.12
+          if (y > 3.8) y = 0.35 + seed * 0.4
+          pos.setXYZ(i, x, y, z)
+        }
+        pos.needsUpdate = true
+        const mat = embers.current.material
+        if (!Array.isArray(mat)) mat.opacity = 0.2 + current.portal * 0.25
+      }
+    }
+
     if (!tablets.current) return
     tablets.current.visible = current.shards > 0.03
     tablets.current.children.forEach((child, index) => {
@@ -224,6 +327,32 @@ export function PortalGate({
       <mesh position={[GATE.x + 1.28, 2.45, GATE.z]} material={stone} castShadow receiveShadow>
         <boxGeometry args={[0.72, 4.9, 0.9]} />
       </mesh>
+      {entrance ? (
+        <>
+          {/* Dim engraved panel markings on outer pillars */}
+          <mesh position={[GATE.x - 1.28, 3.1, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.42, 0.03, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x - 1.28, 2.55, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.28, 0.03, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x - 1.28, 1.9, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.36, 0.03, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x - 1.48, 2.7, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.03, 1.4, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x + 1.28, 3.25, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.38, 0.03, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x + 1.28, 2.4, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.3, 0.03, 0.02]} />
+          </mesh>
+          <mesh position={[GATE.x + 1.48, 2.55, GATE.z + 0.46]} material={engraving}>
+            <boxGeometry args={[0.03, 1.55, 0.02]} />
+          </mesh>
+        </>
+      ) : null}
       <mesh position={[GATE.x, 5.08, GATE.z]} material={stone} castShadow receiveShadow>
         <boxGeometry args={[3.35, 0.58, 1]} />
       </mesh>
@@ -264,12 +393,12 @@ export function PortalGate({
       </group>
 
       <mesh ref={seam} position={[GATE.x, 2.28, GATE.z + 0.34]} renderOrder={3}>
-        <planeGeometry args={[0.045, 3.55]} />
+        <planeGeometry args={[entrance ? 0.09 : 0.045, 3.55]} />
         <meshStandardMaterial
           ref={seamMat}
           color="#0e2418"
           emissive="#39d98a"
-          emissiveIntensity={0.05}
+          emissiveIntensity={entrance ? 0.28 : 0.05}
           roughness={0.3}
           metalness={0.2}
           transparent
@@ -313,6 +442,45 @@ export function PortalGate({
         distance={5.4}
         decay={2}
       />
+      {entrance ? (
+        <>
+          <pointLight
+            ref={frameSpill}
+            position={[GATE.x, 2.4, GATE.z + 0.55]}
+            color="#2a8f62"
+            intensity={0.45}
+            distance={3.4}
+            decay={2}
+          />
+          {/* Thin mist leaking from the lower threshold */}
+          <mesh position={[GATE.x, 0.28, GATE.z + 0.55]} rotation={[-0.35, 0, 0]}>
+            <planeGeometry args={[1.55, 0.55]} />
+            <meshBasicMaterial
+              ref={mistMat}
+              color="#1a4a34"
+              transparent
+              opacity={0.1}
+              depthWrite={false}
+            />
+          </mesh>
+          {/* Soft energy ripple into nearby floor tiles */}
+          <mesh ref={rippleMesh} position={[GATE.x, 0.03, GATE.z + 0.95]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.7, 0.45]} />
+            <meshBasicMaterial
+              ref={rippleMat}
+              color="#2a8f62"
+              transparent
+              opacity={0}
+              depthWrite={false}
+            />
+          </mesh>
+          {emberCloud ? (
+            <group position={[GATE.x, 0.35, GATE.z + 0.38]}>
+              <primitive object={emberCloud.points} ref={embers} />
+            </group>
+          ) : null}
+        </>
+      ) : null}
     </group>
   )
 }

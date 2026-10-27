@@ -32,6 +32,7 @@ export function Operative({
   shadows,
   signalBoost,
   heroLit = false,
+  entrance = false,
 }: {
   pose: RefObject<Pose>
   shadows: boolean
@@ -39,6 +40,8 @@ export function Operative({
   signalBoost?: RefObject<number>
   /** Brighter base materials for the landing hero scene only. */
   heroLit?: boolean
+  /** Opening cinematic: faint chest + thin edge readability against the door. */
+  entrance?: boolean
 }) {
   const root = useRef<THREE.Group>(null)
   const bob = useRef<THREE.Group>(null)
@@ -57,19 +60,19 @@ export function Operative({
     return {
       cloak: new THREE.MeshStandardMaterial({
         ...shared,
-        color: heroLit ? '#2a3832' : '#121816',
+        color: heroLit ? '#2a3832' : entrance ? '#171e1a' : '#121816',
         roughness: 0.88,
         metalness: 0.06,
       }),
       armor: new THREE.MeshStandardMaterial({
         ...shared,
-        color: heroLit ? '#4a5c52' : '#1b2420',
+        color: heroLit ? '#4a5c52' : entrance ? '#24302a' : '#1b2420',
         roughness: 0.42,
         metalness: 0.64,
       }),
       shade: new THREE.MeshStandardMaterial({
         ...shared,
-        color: heroLit ? '#222a26' : '#090c0a',
+        color: heroLit ? '#222a26' : entrance ? '#0e1311' : '#090c0a',
         roughness: 0.94,
         metalness: 0.04,
       }),
@@ -77,12 +80,26 @@ export function Operative({
         ...shared,
         color: '#0c2418',
         emissive: heroLit ? '#34d399' : '#1f9a62',
-        emissiveIntensity: heroLit ? 1.15 : 0.42,
+        emissiveIntensity: heroLit ? 1.15 : entrance ? 0.62 : 0.42,
         roughness: 0.32,
         metalness: 0.38,
       }),
     }
-  }, [heroLit])
+  }, [entrance, heroLit])
+
+  const edge = useMemo(() => {
+    if (!entrance) return null
+    return new THREE.MeshStandardMaterial({
+      color: '#0a1410',
+      emissive: '#1a6b48',
+      emissiveIntensity: 0.38,
+      roughness: 0.55,
+      metalness: 0.2,
+      flatShading: true,
+      transparent: false,
+      opacity: 1,
+    })
+  }, [entrance])
 
   useEffect(() => {
     return () => {
@@ -90,8 +107,9 @@ export function Operative({
       materials.armor.dispose()
       materials.shade.dispose()
       materials.signal.dispose()
+      edge?.dispose()
     }
-  }, [materials])
+  }, [edge, materials])
 
   useFrame(({ clock }) => {
     const current = pose.current
@@ -111,6 +129,11 @@ export function Operative({
       material.transparent = fading
       material.depthWrite = opacity > 0.2
     }
+    if (edge) {
+      edge.opacity = opacity
+      edge.transparent = fading
+      edge.depthWrite = opacity > 0.2
+    }
 
     const swing = Math.sin(current.walkPhase) * 0.46 * current.walkWeight
     hipL.current.rotation.x = swing
@@ -128,9 +151,12 @@ export function Operative({
     head.current.rotation.y = Math.sin(time * 0.5) * 0.04 * idle
     head.current.rotation.x = Math.sin(time * 0.38) * 0.016 * idle
     const boost = signalBoost?.current ?? 0
-    const baseSignal = heroLit ? 0.85 : 0.4
+    const baseSignal = heroLit ? 0.85 : entrance ? 0.55 : 0.4
     materials.signal.emissiveIntensity =
       baseSignal + Math.sin(time * 1.45) * 0.1 + Math.max(0, boost) * (heroLit ? 2.4 : 1.45)
+    if (edge) {
+      edge.emissiveIntensity = 0.32 + Math.sin(time * 1.1) * 0.06
+    }
     group.traverse((child) => {
       if (child instanceof THREE.Mesh) child.castShadow = shadows && opacity > 0.4
     })
@@ -151,11 +177,19 @@ export function Operative({
           <Block size={[0.22, 0.04, 0.02]} position={[0, -0.16, 0.22]} material={materials.signal} />
           <Block size={[0.07, 0.26, 0.2]} position={[-0.21, -0.16, 0.02]} material={materials.shade} />
           <Block size={[0.07, 0.26, 0.2]} position={[0.21, -0.16, 0.02]} material={materials.shade} />
+          {edge ? <Block size={[0.42, 0.02, 0.02]} position={[0, 0.12, 0.18]} material={edge} /> : null}
         </group>
         <Block size={[0.28, 0.12, 0.28]} position={[-0.4, 1.64, 0]} material={materials.armor} />
         <Block size={[0.08, 0.1, 0.08]} position={[-0.52, 1.74, -0.02]} material={materials.signal} />
         <Block size={[0.1, 0.06, 0.025]} position={[0, 1.74, -0.3]} material={materials.signal} />
         <Block size={[0.24, 0.11, 0.24]} position={[0.4, 1.62, 0.02]} material={materials.armor} />
+        {edge ? (
+          <>
+            <Block size={[0.02, 0.42, 0.02]} position={[-0.3, 1.45, 0.16]} material={edge} />
+            <Block size={[0.02, 0.42, 0.02]} position={[0.3, 1.45, 0.16]} material={edge} />
+            <Block size={[0.3, 0.02, 0.02]} position={[0, 1.68, 0.17]} material={edge} />
+          </>
+        ) : null}
 
         <group ref={hipL} position={[-0.15, 0.98, 0]}>
           <Block size={[0.17, 0.4, 0.18]} position={[0, -0.2, 0]} material={materials.armor} />

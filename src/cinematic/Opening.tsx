@@ -190,7 +190,7 @@ export function Opening({ onContinue, continuing }: OpeningProps) {
               />
             </SceneBoundary>
           ) : null}
-          <div className="vignette" />
+          <div className="vignette vignette--entrance" />
         </div>
       ) : null}
       {stage === 'run' ? <div className={ready ? 'veil is-clear' : 'veil'} /> : null}
