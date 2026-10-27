@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { FinalAccess } from './FinalAccess.tsx'
 import { HeroVista } from './HeroVista.tsx'
 import { MissionBriefing } from './MissionBriefing.tsx'
 import { OperationRoute } from './OperationRoute.tsx'
 import { SectorRange } from './SectorRange.tsx'
 import { nav, partners, QUALIFIER_AT, registrationUrl } from './content.ts'
+import { heroApproachProgress, prefersReducedMotion, sectionLocalProgress } from './scrollDrive.ts'
+import { useSectionReveal } from './useSectionReveal.ts'
 import './landing.css'
 
 function pad(value: number): string {
@@ -41,13 +43,121 @@ function ArenaStatus({ linked }: { linked: boolean }) {
   return <p className="cta is-pending">REGISTRATION OPENS SOON</p>
 }
 
+function useBandDepth(ref: RefObject<HTMLElement | null>, active: boolean) {
+  const depthRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return
+    const node = ref.current
+    const depth = depthRef.current
+    if (!node || !depth) return
+
+    let raf = 0
+    const paint = () => {
+      const p = sectionLocalProgress(node)
+      depth.style.setProperty('--band-depth', p.toFixed(3))
+      depth.style.setProperty('--band-scan', active && p > 0.12 && p < 0.88 ? '1' : '0')
+    }
+    const onScroll = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(paint)
+    }
+    paint()
+    const safety = window.setInterval(paint, 360)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.clearInterval(safety)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [ref, active])
+
+  return depthRef
+}
+
+function BandDepth({ depthRef }: { depthRef: RefObject<HTMLDivElement | null> }) {
+  return (
+    <div className="band-depth" ref={depthRef} aria-hidden="true">
+      <span className="band-depth-layer band-depth-layer--a" />
+      <span className="band-depth-layer band-depth-layer--b" />
+      <span className="band-depth-scan" />
+    </div>
+  )
+}
+
+function delayStyle(ms: number): CSSProperties {
+  return { ['--reveal-delay' as string]: `${ms}ms` }
+}
+
 export function LandingPage() {
   const [clock, setClock] = useState(() => remaining(Date.now()))
+  const heroRef = useRef<HTMLElement>(null)
+  const heroCopyRef = useRef<HTMLDivElement>(null)
+  const scrollProgress = useRef(0)
+  const [countdownRef, countdownShown] = useSectionReveal<HTMLElement>()
+  const [partnersRef, partnersShown] = useSectionReveal<HTMLElement>()
+  const countdownDepth = useBandDepth(countdownRef, countdownShown)
+  const partnersDepth = useBandDepth(partnersRef, partnersShown)
 
   useEffect(() => {
     const tick = () => setClock(remaining(Date.now()))
     const timer = window.setInterval(tick, 1000)
     return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const reduced = prefersReducedMotion()
+    let raf = 0
+    let pumping = false
+    let lastFade = -1
+
+    const update = () => {
+      const hero = heroRef.current
+      const copy = heroCopyRef.current
+      if (!hero) return false
+      const progress = reduced ? 0 : heroApproachProgress(hero)
+      scrollProgress.current = progress
+      const fade = reduced ? 0 : Math.max(0, (progress - 0.72) / 0.28)
+      if (copy && Math.abs(lastFade - fade) >= 0.008) {
+        lastFade = fade
+        copy.style.setProperty('--hero-fade', fade.toFixed(3))
+      }
+      const rect = hero.getBoundingClientRect()
+      const near = rect.bottom > -48 && rect.top < window.innerHeight + 48
+      return near || (progress > 0.02 && progress < 0.98)
+    }
+
+    const pump = () => {
+      const keep = update()
+      if (keep) {
+        raf = requestAnimationFrame(pump)
+      } else {
+        pumping = false
+      }
+    }
+
+    const arm = () => {
+      if (pumping) return
+      pumping = true
+      raf = requestAnimationFrame(pump)
+    }
+
+    arm()
+    // Safety wake: catches scroll without a scroll event (trackpad coalescing / some webviews).
+    const safety = window.setInterval(arm, 320)
+    window.addEventListener('scroll', arm, { passive: true })
+    document.addEventListener('scroll', arm, { passive: true, capture: true })
+    window.addEventListener('resize', arm)
+    return () => {
+      pumping = false
+      cancelAnimationFrame(raf)
+      window.clearInterval(safety)
+      window.removeEventListener('scroll', arm)
+      document.removeEventListener('scroll', arm, true)
+      window.removeEventListener('resize', arm)
+    }
   }, [])
 
   return (
@@ -70,8 +180,8 @@ export function LandingPage() {
       </header>
 
       <main>
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-copy">
+        <section className="hero" ref={heroRef} aria-labelledby="hero-title">
+          <div ref={heroCopyRef} className="hero-copy">
             <p className="eyebrow">Season 01</p>
             <h1 id="hero-title">DEAD NOCTIS</h1>
             <p className="hero-kicker">National-level cybersecurity capture the flag</p>
@@ -92,12 +202,17 @@ export function LandingPage() {
             <ArenaStatus linked />
           </div>
           <div className="hero-stage" aria-hidden="true">
-            <HeroVista />
+            <HeroVista scrollProgress={scrollProgress} heroNode={heroRef} copyNode={heroCopyRef} />
           </div>
         </section>
 
-        <section id="countdown" className="band">
-          <div className="band-head">
+        <section
+          id="countdown"
+          ref={countdownRef}
+          className={`band reveal-section${countdownShown ? ' is-shown' : ''}`}
+        >
+          <BandDepth depthRef={countdownDepth} />
+          <div className="band-head reveal-item" style={delayStyle(0)}>
             <p className="eyebrow">Countdown</p>
             <h2>{clock.open ? 'Qualifier window' : 'Until the online qualifier'}</h2>
           </div>
@@ -109,14 +224,14 @@ export function LandingPage() {
                 ['Minutes', clock.minutes],
                 ['Seconds', clock.seconds],
               ] as const
-            ).map(([label, value]) => (
-              <div key={label}>
+            ).map(([label, value], index) => (
+              <div key={label} className="reveal-item" style={delayStyle(90 + index * 90)}>
                 <strong>{value}</strong>
                 <span>{label}</span>
               </div>
             ))}
           </div>
-          <ul className="fact-row">
+          <ul className="fact-row reveal-item" style={delayStyle(180)}>
             <li>06 Dec 2026, 09:00–21:00 IST</li>
             <li>12 hours, remote, jeopardy-style</li>
             <li>Finals at KLEF, Vaddeswaram</li>
@@ -128,14 +243,19 @@ export function LandingPage() {
         <SectorRange />
         <OperationRoute />
 
-        <section id="partners" className="band">
-          <div className="band-head">
+        <section
+          id="partners"
+          ref={partnersRef}
+          className={`band reveal-section${partnersShown ? ' is-shown' : ''}`}
+        >
+          <BandDepth depthRef={partnersDepth} />
+          <div className="band-head reveal-item" style={delayStyle(0)}>
             <p className="eyebrow">Partners</p>
             <h2>The organisers</h2>
           </div>
           <ul className="partner-grid">
-            {partners.map((partner) => (
-              <li key={partner.name}>
+            {partners.map((partner, index) => (
+              <li key={partner.name} className="reveal-item" style={delayStyle(80 + index * 100)}>
                 <img src={partner.src} alt="" />
                 <span>{partner.name}</span>
               </li>

@@ -209,9 +209,17 @@ export function OperationRoute() {
   }
 
   return (
-    <section id="format" ref={sectionRef} className="band route-band" aria-labelledby="route-title">
-      <div className="route-terrain" aria-hidden="true" />
-      <div className="band-head">
+    <section
+      id="format"
+      ref={sectionRef}
+      className={`band route-band reveal-section${states.some((s) => s.visible) || reduced ? ' is-shown' : ''}`}
+      aria-labelledby="route-title"
+    >
+      <div className="route-terrain band-depth" aria-hidden="true">
+        <span className="band-depth-layer band-depth-layer--a" />
+        <span className="band-depth-scan" />
+      </div>
+      <div className="band-head reveal-item" style={{ ['--reveal-delay' as string]: '0ms' }}>
         <p className="eyebrow">Protocol</p>
         <h2 id="route-title">Format, rules, rewards, dates</h2>
       </div>
@@ -280,13 +288,13 @@ export function OperationRoute() {
         </ol>
       </div>
 
-      <ul className="rules route-rules">
+      <ul className="rules route-rules reveal-item" style={{ ['--reveal-delay' as string]: '120ms' }}>
         {protocolRules.map((rule) => (
           <li key={rule}>{rule}</li>
         ))}
       </ul>
 
-      <dl className="dates route-dates">
+      <dl className="dates route-dates reveal-item" style={{ ['--reveal-delay' as string]: '220ms' }}>
         {protocolDates.map((item) => (
           <div key={item.label}>
             <dt>{item.label}</dt>
