@@ -153,22 +153,22 @@ export function PortalGate({
   const stone = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: '#161e1a',
+        color: entrance ? '#2a3530' : '#161e1a',
         roughness: 0.74,
         metalness: 0.32,
         flatShading: true,
       }),
-    [],
+    [entrance],
   )
   const stoneDark = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: '#0c100e',
+        color: entrance ? '#1a221e' : '#0c100e',
         roughness: 0.88,
         metalness: 0.14,
         flatShading: true,
       }),
-    [],
+    [entrance],
   )
   const engraving = useMemo(
     () =>
@@ -233,14 +233,15 @@ export function PortalGate({
     const power = energy.uniforms.uPower
     const time = energy.uniforms.uTime
     if (!current || !power || !time) return
-    power.value = current.portal
+    // Entrance: keep energy as a narrow seam glow, not a flat green panel.
+    power.value = entrance ? current.portal * 0.45 : current.portal
     time.value = preferences.reduce ? 2.4 : clock.elapsedTime
     if (leftLeaf.current) leftLeaf.current.position.x = GATE.x - 0.46 - current.portal * leafTravel
     if (rightLeaf.current) rightLeaf.current.position.x = GATE.x + 0.46 + current.portal * leafTravel
     if (seamMat.current) {
       // Thin dormant seam → fades as the aperture becomes a real opening
-      const seamIdle = entrance ? 0.28 : 0.05
-      const seamGain = wideEnergy ? 0.35 : entrance ? 0.85 : 1.2
+      const seamIdle = entrance ? 0.18 : 0.05
+      const seamGain = wideEnergy ? 0.35 : entrance ? 0.55 : 1.2
       seamMat.current.emissiveIntensity = seamIdle + current.portal * seamGain
       seamMat.current.opacity = wideEnergy ? Math.max(0, 0.9 - current.portal * 1.35) : 1
       seamMat.current.transparent = wideEnergy
@@ -329,6 +330,19 @@ export function PortalGate({
       </mesh>
       {entrance ? (
         <>
+          {/* Receding inner frames for portal depth (not a flat green panel) */}
+          <mesh position={[GATE.x, 2.35, GATE.z - 0.35]}>
+            <boxGeometry args={[1.7, 3.9, 0.08]} />
+            <meshStandardMaterial color="#0e1612" roughness={0.85} metalness={0.15} flatShading />
+          </mesh>
+          <mesh position={[GATE.x, 2.35, GATE.z - 0.7]}>
+            <boxGeometry args={[1.45, 3.5, 0.08]} />
+            <meshStandardMaterial color="#0a1210" roughness={0.9} metalness={0.1} flatShading />
+          </mesh>
+          <mesh position={[GATE.x, 2.35, GATE.z - 1.05]}>
+            <boxGeometry args={[1.2, 3.15, 0.08]} />
+            <meshStandardMaterial color="#08100e" roughness={0.92} metalness={0.08} flatShading />
+          </mesh>
           {/* Dim engraved panel markings on outer pillars */}
           <mesh position={[GATE.x - 1.28, 3.1, GATE.z + 0.46]} material={engraving}>
             <boxGeometry args={[0.42, 0.03, 0.02]} />
@@ -406,8 +420,13 @@ export function PortalGate({
         />
       </mesh>
 
-      <mesh ref={energyMesh} position={[GATE.x, 2.25, GATE.z - 0.08]} material={energy} renderOrder={2}>
-        <planeGeometry args={[1.55, 4.2]} />
+      <mesh
+        ref={energyMesh}
+        position={[GATE.x, 2.25, GATE.z - (entrance ? 0.45 : 0.08)]}
+        material={energy}
+        renderOrder={1}
+      >
+        <planeGeometry args={[entrance ? 0.72 : 1.55, entrance ? 3.4 : 4.2]} />
       </mesh>
 
       <group ref={beam} position={[GATE.x, 4.6, GATE.z]} visible={false}>

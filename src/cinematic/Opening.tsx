@@ -147,6 +147,8 @@ export function Opening({ onContinue, continuing }: OpeningProps) {
     window.setTimeout(() => {
       setStage('run')
       setGateLocked(false)
+      // Failsafe: never leave the opaque veil covering a live canvas.
+      window.setTimeout(() => setReady(true), 400)
     }, 260)
   }
 

@@ -1,8 +1,9 @@
-import { OPERATIVE_YAW, WALK_INSIDE, WALK_START, WALK_THRESHOLD } from './layout.ts'
+import { OPERATIVE_YAW, WALK_HERO, WALK_INSIDE, WALK_THRESHOLD } from './layout.ts'
 import type { Vec3 } from './layout.ts'
 
-export const DURATION = 7.55
-export const TITLE_AT = 6.7
+export const DURATION = 8.2
+/** Title appears early so DEAD NOCTIS shares the first readable composition. */
+export const TITLE_AT = 0.55
 
 export type Pose = {
   t: number
@@ -16,11 +17,8 @@ export type Pose = {
   portal: number
   beam: number
   shards: number
-  /** 0–1 walk-up to the door threshold. */
   approach: number
-  /** 0–1 pass through the doorway (~0.6–1.2s). */
   crossing: number
-  /** 0–1 settle into the interior command space. */
   interior: number
   showTitle: boolean
   done: boolean
@@ -28,12 +26,17 @@ export type Pose = {
 
 type CamKey = { t: number; pos: Vec3; look: Vec3 }
 
+/**
+ * Hero framing: left ~38% free for title, right holds door + large operative.
+ * Operative ~30%+ viewport height at fov 36 from ~7.2m.
+ */
 const CAMERA: CamKey[] = [
-  { t: 0, pos: [-2.6, 2.55, 8.2], look: [2.1, 1.45, -0.4] },
-  { t: 2.2, pos: [-1.7, 2.1, 6.5], look: [2.2, 1.35, -0.55] },
-  { t: 4.4, pos: [-1.05, 1.88, 5.35], look: [2.4, 1.3, -1.4] },
-  { t: 5.55, pos: [-0.55, 1.72, 3.85], look: [2.5, 1.35, -3.4] },
-  { t: DURATION, pos: [-0.95, 1.82, 4.55], look: [2.45, 1.28, -3.1] },
+  { t: 0, pos: [-0.35, 1.95, 7.35], look: [2.95, 1.15, 0.15] },
+  { t: 2.8, pos: [-0.15, 1.88, 6.95], look: [2.9, 1.12, -0.05] },
+  { t: 4.2, pos: [0.35, 1.78, 5.55], look: [2.6, 1.2, -1.5] },
+  { t: 5.35, pos: [0.55, 1.68, 3.65], look: [2.45, 1.25, -3.55] },
+  { t: 6.6, pos: [-0.2, 1.9, 7.05], look: [2.95, 1.15, 0.05] },
+  { t: DURATION, pos: [-0.35, 1.95, 7.35], look: [2.95, 1.15, 0.15] },
 ]
 
 function clamp01(value: number): number {
@@ -41,7 +44,7 @@ function clamp01(value: number): number {
 }
 
 function smooth(t: number, start: number, end: number): number {
-  const amount = clamp01((t - start) / (end - start))
+  const amount = clamp01((t - start) / Math.max(0.0001, end - start))
   return amount * amount * (3 - 2 * amount)
 }
 
@@ -81,12 +84,12 @@ export function createPose(): Pose {
     t: 0,
     camPos: [0, 0, 0],
     camLook: [0, 0, 0],
-    operativeOpacity: 0,
-    operativePos: [0, 0, 0],
+    operativeOpacity: 1,
+    operativePos: [WALK_HERO[0], WALK_HERO[1], WALK_HERO[2]],
     operativeYaw: OPERATIVE_YAW,
     walkWeight: 0,
     walkPhase: 0,
-    portal: 0,
+    portal: 0.12,
     beam: 0,
     shards: 0,
     approach: 0,
@@ -97,38 +100,38 @@ export function createPose(): Pose {
   }
 }
 
-const _threshold: Vec3 = [0, 0, 0]
+const _mid: Vec3 = [0, 0, 0]
+const _cross: Vec3 = [0, 0, 0]
 
 export function samplePose(time: number, out: Pose): Pose {
   const t = Math.max(0, time)
   out.t = t
   writeCamera(t, out.camPos, out.camLook)
 
-  // Approach door (~2.75→4.55), then cross in ~1.0s, then settle interior.
-  out.approach = smooth(t, 2.75, 4.55)
-  out.crossing = smooth(t, 4.55, 5.55)
-  out.interior = smooth(t, 5.45, 6.45)
+  // Visible immediately — no delayed fade-in that hides the figure.
+  out.approach = smooth(t, 3.15, 4.35)
+  out.crossing = smooth(t, 4.35, 5.35)
+  out.interior = smooth(t, 5.15, 5.95) * (1 - smooth(t, 6.2, 7.0))
+  const home = smooth(t, 6.15, 7.05)
 
-  writeLerp(_threshold, WALK_START, WALK_THRESHOLD, out.approach)
-  writeLerp(out.operativePos, _threshold, WALK_INSIDE, out.crossing)
+  writeLerp(_mid, WALK_HERO, WALK_THRESHOLD, out.approach)
+  writeLerp(_cross, _mid, WALK_INSIDE, out.crossing)
+  writeLerp(out.operativePos, _cross, WALK_HERO, home)
 
-  const fadeIn = smooth(t, 1.45, 1.95)
-  // Soft fade as the figure settles deeper into the corridor.
-  const fadeDeep = 1 - out.interior * 0.18
-  out.operativeOpacity = fadeIn * fadeDeep
-  out.operativeYaw = lerp(OPERATIVE_YAW, 0.12, out.crossing)
+  out.operativeOpacity = 1
+  out.operativeYaw = lerp(OPERATIVE_YAW, 0.08, out.crossing * (1 - home))
   out.walkWeight =
-    smooth(t, 2.75, 3.05) * (1 - smooth(t, 5.45, 5.85))
-  out.walkPhase = (out.approach + out.crossing) * Math.PI * 2 * 2.15
+    smooth(t, 3.15, 3.4) * (1 - smooth(t, 5.25, 5.55)) +
+    smooth(t, 6.15, 6.35) * (1 - smooth(t, 6.85, 7.15)) * 0.55
+  out.walkPhase = (out.approach + out.crossing + home) * Math.PI * 2 * 2.05
 
-  const hint = smooth(t, 2.4, 3.55) * 0.08
-  const rise = smooth(t, 4.15, 4.95)
+  const hint = 0.12 + smooth(t, 2.6, 3.6) * 0.08
+  const rise = smooth(t, 4.05, 4.85)
   const settle = out.interior
   const risen = hint + (1 - hint) * rise
-  // Peak open during crossing, then ease down while keeping frame readable.
-  out.portal = risen * (1 - settle * 0.38) + 0.28 * settle
-  out.beam = smooth(t, 4.45, 5.05) * (1 - smooth(t, 5.55, 6.15))
-  out.shards = smooth(t, 4.3, 4.95) * (1 - smooth(t, 5.5, 6.1))
+  out.portal = risen * (1 - settle * 0.25) * (1 - home * 0.35) + 0.14 * home
+  out.beam = smooth(t, 4.25, 4.85) * (1 - smooth(t, 5.45, 6.05))
+  out.shards = smooth(t, 4.15, 4.75) * (1 - smooth(t, 5.4, 6.0))
   out.showTitle = t >= TITLE_AT
   out.done = t >= DURATION
   return out
