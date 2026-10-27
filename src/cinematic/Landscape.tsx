@@ -78,7 +78,7 @@ function Motes() {
   return <primitive object={points} />
 }
 
-export function Landscape({ shadows }: { shadows: boolean }) {
+export function Landscape({ shadows, entrance = false }: { shadows: boolean; entrance?: boolean }) {
   const massMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -114,16 +114,16 @@ export function Landscape({ shadows }: { shadows: boolean }) {
       <mesh rotation-x={-Math.PI / 2} position={[1.2, 0, -1]} receiveShadow={shadows}>
         <circleGeometry args={[36, 48]} />
         <meshPhysicalMaterial
-          color="#0c110f"
-          roughness={0.48}
-          metalness={0.46}
+          color={entrance ? '#15201b' : '#0c110f'}
+          roughness={entrance ? 0.4 : 0.48}
+          metalness={entrance ? 0.52 : 0.46}
           clearcoat={0.12}
           clearcoatRoughness={0.4}
         />
       </mesh>
       <primitive object={masses} />
       <primitive object={floors} />
-      <Motes />
+      {!entrance ? <Motes /> : null}
     </group>
   )
 }
